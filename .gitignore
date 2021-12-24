@@ -1,0 +1,8 @@
+*pycache__
+*.db
+*.out
+*.jpg
+*.jpeg
+*.png
+keys.py
+*.env
