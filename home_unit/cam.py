@@ -1,9 +1,4 @@
-import shutil
-import socket
-import cv2
-import time
-import threading
-import os
+import cv2, os, socket, subprocess, time, threading
 import numpy as np
 from datetime import datetime
 
@@ -20,7 +15,7 @@ class Camera():
     
     def __init__(self, signaller) -> None:
         self.signaller = signaller
-        self.detection_thread = threading.Thread(target=self.im_recog)
+        # self.detection_thread = threading.Thread(target=self.im_recog) no need to thread - its the only thing the camera will be doing anyway
     
         self.name = socket.gethostname()
         self.object_detection_active = False
@@ -31,6 +26,7 @@ class Camera():
 
         self.self.SEPARATOR = "<self.SEPARATOR>"
         self.BUFFER_SIZE = 1024
+        print("Camera initialised")
 
     # ==========Log all actions==========
     def log(self, action):
@@ -57,39 +53,17 @@ class Camera():
         time.sleep(0.5)
         camera.close()
         print(f"Image saved as {img_name}")
+        self.signaller.send_file(img_name, f"Camera shot from {self.name}")
         
-    # ==========Send photo to hub==========
-    def send_photo(self, hub_addr, port, file, file_description):
-        s = socket.socket()
-        print(f"Connecting to hub...")
-        s.connect((hub_addr, port))
-        filesize = os.path.getsize(file)
-        file_type = "photo"
-
-        print(f"Sending file: {file}")
-        s.send(f"{file}{self.SEPARATOR}{filesize}{self.SEPARATOR}{file_description}{self.SEPARATOR}{file_type}".encode())
-        try:
-            progress = tqdm(range(filesize), f"Sending {file}", unit="B", unit_scale=True, unit_divisor=1024)
-            with open(file, "rb") as f:
-                for _ in progress:
-                    try:
-                        bytes_read = f.read(self.BUFFER_SIZE)
-                        
-                        if not bytes_read:
-                            break
-                        
-                        s.sendall(bytes_read)
-                        progress.update(len(bytes_read))
-                    except Exception as e:
-                        print(f"FILE SEND ERROR: {e}")
-                        break
-        except Exception as e:
-            print(f"FILE SEND ERROR - outside - {e}")
-        print(f"{file} sent to hub")
-        s.close()
-
-
-
+    # ==========Video stream==========
+    def start_motion(self):
+        subprocess.run(['sudo','service','motion','start']) 
+        self.signaller.message_to_hub("Starting live video")
+    
+    def stop_motion(self):
+        subprocess.run(['sudo','service','motion','stop'])
+        self.signaller.message_to_hub("Stopping live video")
+        
     # ==========Object recognition==========
     def im_recog(self, counts_before_detect_again=60):
         """
@@ -97,9 +71,13 @@ class Camera():
         """
         time.sleep(0.5)
         
+        # when set to False this stops object detection
+         # edit - this is controlled from the main.py file, see if this works...
+        # self.object_detection_active = True
+        
         # this stops the pi saving too many images, we just force it to pause object detection
         detection = False
-        # counts_before_detect_again = 0
+        
             
         config_file = "ssd_mobilenet_v3_large_coco_2020_01_14.pbtxt"
         frozen_model="frozen_inference_graph.pb"
@@ -122,7 +100,6 @@ class Camera():
         time.sleep(1)
             
         print("detecting active")
-        self.object_detection_active = True
         while True:
             if self.object_detection_active:
                 for frame in camera.capture_continuous(raw_capture, format="bgr", use_video_port=True):
@@ -145,7 +122,7 @@ class Camera():
                                         self.log(f"{datetime.now().strftime('%H%M')} - {labels[ClassInd-1]}_detected")
                                         detection = True
                                         print(f"{labels[ClassInd-1]} detected, dimensions: {boxes}, confidence: {round(float(conf*100), 1)}%")
-                                        self.signaller.message(1, 1, imgfile, f"{self.name} detected person at {datetime.now().strftime('%H%M%S')}")
+                                        self.signaller.send_file(imgfile, f"{self.name}: detected person at {datetime.now().strftime('%H%M%S')}")
                                     
                     if detection:
                         # this is basically a timer that stops the pi saving millions of images
@@ -164,6 +141,7 @@ class Camera():
                 break
             
         print("end of detection")
+        self.signaller.message_to_hub("Object detection deactivated")
         camera.close()
         cv2.destroyAllWindows()
         

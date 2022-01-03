@@ -31,7 +31,9 @@ class HomeUnit():
         
     def activate(self):
         self.hub_listener.start()       
+        print("Activating...")
         self.signaller.message_to_hub("Activated", self.id)
+        print("Activation message sent")
         
     def listen_for_hub(self):
         while True:
@@ -54,8 +56,18 @@ class HomeUnit():
                 print(f"Receive from local network error: {e}")
         
     def start_object_detection(self):
+        self.camera.object_detection_active = True
         self.camera.im_recog()
+        
+    def stop_object_detection(self):
+        self.camera.object_detection_active = False
+        
+    def start_motion_stream(self):
+        self.camera.start_motion()
+        
+    def stop_motion_stream(self):
+        self.camera.stop_motion()
 
 if __name__ == '__main__':
     unit = HomeUnit()
-    unit.start()
+    unit.activate()

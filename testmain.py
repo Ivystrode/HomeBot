@@ -10,5 +10,5 @@ class Main():
         self.camera.test()
         
 if __name__ == '__main__':
-    m = Main(camera=Camera(signaller=Signaller))
+    m = Main(camera=Camera(signaller=Signaller(hub_addr="hubaddrtest", port=12, file_port=17)))
     m.activate()
