@@ -8,7 +8,7 @@ import sys
 import threading
 import time
 
-import bot_db
+import bot_db, reminders
 
 
 updater = None
@@ -27,6 +27,8 @@ def start_bot():
     
     dispatcher.add_handler(CommandHandler('start', start))
     dispatcher.add_handler(CommandHandler('ip', ip_check))
+    dispatcher.add_handler(reminders.reminder_handler)
+    dispatcher.add_handler(CommandHandler('showreminders', reminders.showreminders))
     
     updater.start_polling()
     updater.idle()
@@ -67,7 +69,6 @@ def ip_monitor():
                 try:
                     updater.bot.sendMessage(user[0], f"IP Address updated, old address:\n{stored_ip}\nNew address:\n{ip}", timeout=50)
                 except Exception as e:
-                    print("!!!!!!!!!!!!!!!!!!!!!!!!!")
                     print(e)
             
         time.sleep(1800)
@@ -75,6 +76,8 @@ def ip_monitor():
     
 bot_thread = threading.Thread(name='bot', target=start_bot)
 ip_monitor_thread = threading.Thread(name='ip_monitor', target=ip_monitor)
+reminder_thread = threading.Thread(name='reminder_checker', target=reminders.remindchecker)
 
 bot_thread.start()
 ip_monitor_thread.start()
+reminder_thread.start()
