@@ -1,13 +1,13 @@
-*HomeBot
+# HomeBot
 
-***Home Hub
+### Home Hub
 
 The home_hub directory files run on the PINAS
 
-***Remote Hub
+### Remote Hub
 
 The remote_hub files run on the remote machine (Linode instance)
 
-***Home Cam
+### Home Unit
 
-The home_cam directory files run on the camera units
+The home_unit directory files run on the camera units (and any other unit types I may add)

@@ -1,0 +1,36 @@
+from decouple import config
+import socket, threading
+
+import bot 
+
+class RemoteHub():
+    
+    def __init__(self) -> None:
+        # setup
+        self.BUFFER_SIZE = 1024
+        self.SEPARATOR = "<SEPARATOR>"
+        
+        self.send_port = config("LOCAL_SERVER_RECEIVE_PORT")
+        self.recv_port = config("REMOTE_SERVER_RECEIVE_PORT")
+        
+        self.local_server_listener = threading.Thread(target=self.local_server_listener)
+        
+    def local_server_listener(self):
+        while True:
+            s = socket.socket()
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            s.bind(('0.0.0.0', self.local_recv_port))
+            s.listen(5)
+            try:
+                local_socket, local_address = s.accept()
+                raw_message = local_socket.recv(self.BUFFER_SIZE).decode()
+                cleaned_message = raw_message.split(self.SEPARATOR)
+
+                local_name = cleaned_message[0]
+                message = cleaned_message[1]
+                print(f"Message from {local_name} at {local_address}: {message}")
+
+                s.close()
+                
+            except Exception as e:
+                print(f"Receive from local error: {e}")

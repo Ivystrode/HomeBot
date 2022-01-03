@@ -11,16 +11,14 @@ def is_remote():
 remote = is_remote()
 
 if remote:
-    CLIENT = config("LOCAL_SERVER_IP")
-    PORT = config("LOCAL_SERVER_RECV_PORT")
-else:
-    CLIENT = config("REMOTE_SERVER_IP")
     PORT = config("REMOTE_SERVER_RECV_PORT")
+else:
+    PORT = config("LOCAL_SERVER_RECV_PORT")
 
 
 # while True
 s = socket.socket() 
-s.bind((CLIENT, PORT))
+s.bind(('0.0.0.0', PORT))
 s.listen()
 
 client, address = s.accept()

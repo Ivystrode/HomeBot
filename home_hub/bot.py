@@ -72,12 +72,44 @@ def ip_monitor():
                     print(e)
             
         time.sleep(1800)
+        
+def send_message(message):
+    for user in bot_db.get_all_users():
+        updater.bot.send_message(user[0], message)
+        
+def send_file(unitname, filename, file_description):
+        users = bot_db.get_all_users()
+        print(f"[HUB] BOT: FILE SEND, users: {users}")
+        try:
+            for user in users:
+                sent = False
+                try:
+                    updater.bot.sendPhoto(user[0], photo=open(filename, "rb"), timeout=50, caption=f"{unitname}: {file_description}")
+                    print("[HUB] BOT: Sent photo")
+                    sent = True
+                except Exception as e:
+                    print(f"[HUB] BOT: Not a photo...send as file?")
+                    try:
+                        if not sent:
+                            updater.bot.sendDocument(user[0], document=open(filename, "rb"), timeout=50, caption=f"{unitname}: {file_description}")
+                            print("[HUB] BOT: Sent as document")
+                        sent = True
+                    except Exception as e:
+                        print(f"[HUB] BOT: Unable to send file (neither a photo or a document recognised) {filename} - {e}")
+                if sent == True:
+                    print(f"[HUB] BOT: File sent: {filename} to {user}")
+                else:
+                    print(f"[HUB] BOT: Unable to send {filename} to user: {user}")
+                    
+        except Exception as e:
+            print(f"[HUB] BOT: Unable to send file {filename} - {e}")
     
     
 bot_thread = threading.Thread(name='bot', target=start_bot)
 ip_monitor_thread = threading.Thread(name='ip_monitor', target=ip_monitor)
 reminder_thread = threading.Thread(name='reminder_checker', target=reminders.remindchecker)
 
-bot_thread.start()
-ip_monitor_thread.start()
-reminder_thread.start()
+def activate_bot():
+    bot_thread.start()
+    ip_monitor_thread.start()
+    reminder_thread.start()
