@@ -53,13 +53,21 @@ def start_object_detection(update, context):
     try:
         if len(context.args) == 0:
             for unit in bot_db.get_all_units():
-                commands.send_command()
-                update.message.reply_text()
-    except:
-        pass
+                commands.send_command(unit[1], "start_object_detection")
+            update.message.reply_text("Telling all units to start object detection")
+    except Exception as e:
+        update.message.reply_text("Something went wrong")
+        update.message.reply_text(f"{e}")
 
 def stop_object_detection(update, context):
-    update.message.reply_text()
+    try:
+        if len(context.args) == 0:
+            for unit in bot_db.get_all_units():
+                commands.send_command(unit[1], "stop_object_detection")
+            update.message.reply_text("Telling all units to stop object detection")
+    except Exception as e:
+        update.message.reply_text("Something went wrong")
+        update.message.reply_text(f"{e}")
 
 def ip_monitor():
     while True:

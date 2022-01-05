@@ -10,19 +10,27 @@ class HomeUnit():
     The main instance of the camera unit
     """
     
-    def __init__(self, unit_type):
+    def __init__(self, unit_type, testing=False):
         self.name = socket.gethostname()
-        self.hub_addr = config("LOCAL_HUB_ADDRESS")
+        if not testing:
+            self.hub_addr = config("LOCAL_HUB_ADDRESS")
+        else:
+            self.hub_addr = socket.gethostbyname(socket.gethostname())
         self.id = random.randint(1, 1000000)
         self.type = unit_type
+        self.testing = testing
         
         self.receive_port = int(config("LOCAL_UNIT_RECV_PORT"))
         self.send_port = int(config("LOCAL_HUB_RECV_PORT"))
         self.file_send_port = int(config("LOCAL_HUB_FILE_RECV_PORT"))
+        self.BUFFER_SIZE = 1024
+        self.SEPARATOR = "<SEPARATOR>"
         
         self.camera = Camera(signaller=Signaller(self.hub_addr, 
                                                  self.send_port, 
-                                                 self.file_send_port))
+                                                 self.file_send_port),
+                             testing=self.testing)
+        
         self.signaller = Signaller(self.hub_addr, 
                                    self.send_port, 
                                    self.file_send_port)
@@ -50,7 +58,10 @@ class HomeUnit():
                 hub_name = cleaned_message[0]
                 message = cleaned_message[1]
                 print(f"Message from {hub_name} at {hub_address}: {message}")
-                
+
+                if message == "start_object_detection":
+                    self.start_object_detection()
+                    
                 s.close()
                 
             except Exception as e:
@@ -59,6 +70,7 @@ class HomeUnit():
     def start_object_detection(self):
         self.camera.object_detection_active = True
         self.camera.object_detection.start()
+            
         
     def stop_object_detection(self):
         self.camera.object_detection_active = False

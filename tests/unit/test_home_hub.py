@@ -2,7 +2,7 @@ import sys, time, pytest, socket
 from decouple import config
 
 sys.path.append("/home/main/Documents/Main/Code/Projects/homebot/home_hub")
-import main, bot_db
+import main_hub, bot_db
 
 def test_add_unit_over_socket():
     """

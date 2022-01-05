@@ -2,8 +2,12 @@ import cv2, os, socket, subprocess, time, threading
 import numpy as np
 from datetime import datetime
 
-from picamera import PiCamera
-from picamera.array import PiRGBArray
+try:
+    from picamera import PiCamera
+    from picamera.array import PiRGBArray
+except:
+    print("local testing")
+    pass
 from datetime import datetime
 from tqdm import tqdm
 
@@ -13,10 +17,12 @@ class Camera():
     Uses Signaller to send to hub
     """
     
-    def __init__(self, signaller) -> None:
+    def __init__(self, signaller, testing=False) -> None:
         self.signaller = signaller
         self.object_detection = threading.Thread(target=self.im_recog) # no need to thread - its the only thing the camera will be doing anyway
         # YES actually so we can turn it off with a boolean
+        
+        self.testing = testing
     
         self.name = socket.gethostname()
         self.object_detection_active = False
@@ -103,40 +109,44 @@ class Camera():
         print("detecting active")
         while True:
             if self.object_detection_active:
-                for frame in camera.capture_continuous(raw_capture, format="bgr", use_video_port=True):
-                    
-                    image = frame.array
+                if not self.testing:
+                    for frame in camera.capture_continuous(raw_capture, format="bgr", use_video_port=True):
+                        
+                        image = frame.array
 
-                    ClassIndex, confidence, bbox = model.detect(image, confThreshold=0.55)
+                        ClassIndex, confidence, bbox = model.detect(image, confThreshold=0.55)
 
-                    if len(ClassIndex) != 0:
-                        for ClassInd, conf, boxes in zip(ClassIndex.flatten(), confidence.flatten(), bbox):
-                            if ClassInd <= 80:
-                                if labels[ClassInd-1] == "person":
-                                    # these aren't working in this implementation
-                                    cv2.rectangle(image, boxes, (0,255,0), 2)
-                                    cv2.putText(image, f"{labels[ClassInd-1].capitalize()}: {round(float(conf*100), 1)}%",(boxes[0], boxes[1]-10), self.font, fontScale=self.font_scale, color=(0,255,0), thickness=2)
+                        if len(ClassIndex) != 0:
+                            for ClassInd, conf, boxes in zip(ClassIndex.flatten(), confidence.flatten(), bbox):
+                                if ClassInd <= 80:
+                                    if labels[ClassInd-1] == "person":
+                                        # these aren't working in this implementation
+                                        cv2.rectangle(image, boxes, (0,255,0), 2)
+                                        cv2.putText(image, f"{labels[ClassInd-1].capitalize()}: {round(float(conf*100), 1)}%",(boxes[0], boxes[1]-10), self.font, fontScale=self.font_scale, color=(0,255,0), thickness=2)
 
-                                    if not detection:
-                                        imgfile = f'{labels[ClassInd-1].capitalize()}_detection_{datetime.now().strftime("%H%M%S")}.jpg'
-                                        cv2.imwrite(f'{labels[ClassInd-1].capitalize()} detection_{datetime.now().strftime("%H%M%S")}.jpg', image)
-                                        self.log(f"{datetime.now().strftime('%H%M')} - {labels[ClassInd-1]}_detected")
-                                        detection = True
-                                        print(f"{labels[ClassInd-1]} detected, dimensions: {boxes}, confidence: {round(float(conf*100), 1)}%")
-                                        self.signaller.send_file(imgfile, f"{self.name}: detected person at {datetime.now().strftime('%H%M%S')}")
-                                    
-                    if detection:
-                        # this is basically a timer that stops the pi saving millions of images
-                        counts_before_detect_again += 1
-                        if counts_before_detect_again > 60: 
-                            detection = False
-                            counts_before_detect_again = 0
-                    # only relevant if testing unit with a monitor/keyboard connected...
-                    if cv2.waitKey(5) & 0xFF == ord("c"):
-                        self.object_detection_active = False
-                        break
-                    
-                    raw_capture.truncate(0)
+                                        if not detection:
+                                            imgfile = f'{labels[ClassInd-1].capitalize()}_detection_{datetime.now().strftime("%H%M%S")}.jpg'
+                                            cv2.imwrite(f'{labels[ClassInd-1].capitalize()} detection_{datetime.now().strftime("%H%M%S")}.jpg', image)
+                                            self.log(f"{datetime.now().strftime('%H%M')} - {labels[ClassInd-1]}_detected")
+                                            detection = True
+                                            print(f"{labels[ClassInd-1]} detected, dimensions: {boxes}, confidence: {round(float(conf*100), 1)}%")
+                                            self.signaller.send_file(imgfile, f"{self.name}: detected person at {datetime.now().strftime('%H%M%S')}")
+                                        
+                        if detection:
+                            # this is basically a timer that stops the pi saving millions of images
+                            counts_before_detect_again += 1
+                            if counts_before_detect_again > 60: 
+                                detection = False
+                                counts_before_detect_again = 0
+                        # only relevant if testing unit with a monitor/keyboard connected...
+                        if cv2.waitKey(5) & 0xFF == ord("c"):
+                            self.object_detection_active = False
+                            break
+                        
+                        raw_capture.truncate(0)
+                else:
+                    time.sleep(2)
+                    break
                     
             else:
                 break
