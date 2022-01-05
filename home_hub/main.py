@@ -9,34 +9,36 @@ class HomeHub():
     The instance of the home hub
     Runs the bot, wifi scanner, and other things
     """
-    def __init__(self) -> None:
+    def __init__(self, testing=False) -> None:
         
         # setup
         self.BUFFER_SIZE = 1024
         self.SEPARATOR = "<SEPARATOR>"
+        self.testing = testing
         
         # Remote server
-        self.remote_recv_port = config("LOCAL_SERVER_RECEIVE_PORT") # listen on this
-        self.remote_send_port = config("REMOTE_SERVER_RECEIVE_PORT") # send on this
+        self.remote_recv_port = int(config("LOCAL_SERVER_RECV_PORT")) # listen on this
+        self.remote_send_port = int(config("REMOTE_SERVER_RECV_PORT")) # send on this
         
         # Local network comms
-        self.local_recv_port = config("LOCAL_HUB_RECEIVE_PORT") # listen on this
-        self.unit_send_port = config("LOCAL_UNIT_RECEIVE_PORT") # send on this
-        self.file_recv_port = config("LOCAL_HUB_FILE_RECV_PORT") # listen on this
+        self.local_recv_port = int(config("LOCAL_HUB_RECV_PORT")) # listen on this
+        self.unit_send_port = int(config("LOCAL_UNIT_RECV_PORT")) # send on this
+        self.file_recv_port = int(config("LOCAL_HUB_FILE_RECV_PORT")) # listen on this
         
-        self.unit_listener = threading.Thread(target=self.listen_for_units)
-        self.remote_server_listener = threading.Thread(target=self.remote_server_listener)
-        self.file_listener = threading.Thread(target=self.file_receiver)
+        self.unit_listener_thread = threading.Thread(target=self.unit_listener)
+        self.remote_server_listener_thread = threading.Thread(target=self.remote_server_listener)
+        self.file_listener_thread = threading.Thread(target=self.file_listener)
         
 
         
     def activate_hub(self):
-        bot.activate_bot()
-        self.activate_hub()
-        self.unit_listener.start()
-        self.remote_server_listener.start()
+        if not self.testing:
+            bot.activate_bot()
+        self.unit_listener_thread.start()
+        self.file_listener_thread.start()
+        self.remote_server_listener_thread.start()
         
-    def listen_for_units(self):
+    def unit_listener(self):
         while True:
             s = socket.socket()
             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -52,6 +54,10 @@ class HomeHub():
                 print(f"Message from {unit_name}: {message}")
                 
                 s.close()
+                
+                if message.lower() == "activated":
+                    print("add to db")
+                    bot_db.insert_unit(int(cleaned_message[2]), cleaned_message[0], unit_address[0], cleaned_message[3], message)
                 
             except Exception as e:
                 print(f"Receive from local network error: {e}")

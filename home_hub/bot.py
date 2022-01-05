@@ -8,7 +8,7 @@ import sys
 import threading
 import time
 
-import bot_db, reminders
+import bot_db, reminders, commands
 
 
 updater = None
@@ -29,6 +29,8 @@ def start_bot():
     dispatcher.add_handler(CommandHandler('ip', ip_check))
     dispatcher.add_handler(reminders.reminder_handler)
     dispatcher.add_handler(CommandHandler('showreminders', reminders.showreminders))
+    dispatcher.add_handler(CommandHandler('detection', start_object_detection))
+    dispatcher.add_handler(CommandHandler('stopdetection', stop_object_detection))
     
     updater.start_polling()
     updater.idle()
@@ -46,6 +48,18 @@ def ip_check(update, context):
     ip = os.popen('curl -4 icanhazip.com').read()
     update.message.reply_text(ip)
     return ip
+
+def start_object_detection(update, context):
+    try:
+        if len(context.args) == 0:
+            for unit in bot_db.get_all_units():
+                commands.send_command()
+                update.message.reply_text()
+    except:
+        pass
+
+def stop_object_detection(update, context):
+    update.message.reply_text()
 
 def ip_monitor():
     while True:
@@ -110,6 +124,7 @@ ip_monitor_thread = threading.Thread(name='ip_monitor', target=ip_monitor)
 reminder_thread = threading.Thread(name='reminder_checker', target=reminders.remindchecker)
 
 def activate_bot():
-    bot_thread.start()
-    ip_monitor_thread.start()
-    reminder_thread.start()
+    pass
+    # bot_thread.start()
+    # ip_monitor_thread.start()
+    # reminder_thread.start()

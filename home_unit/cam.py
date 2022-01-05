@@ -15,7 +15,8 @@ class Camera():
     
     def __init__(self, signaller) -> None:
         self.signaller = signaller
-        # self.detection_thread = threading.Thread(target=self.im_recog) no need to thread - its the only thing the camera will be doing anyway
+        self.object_detection = threading.Thread(target=self.im_recog) # no need to thread - its the only thing the camera will be doing anyway
+        # YES actually so we can turn it off with a boolean
     
         self.name = socket.gethostname()
         self.object_detection_active = False
@@ -24,8 +25,9 @@ class Camera():
         self.font_scale = 2
         self.font = cv2.FONT_HERSHEY_PLAIN
 
-        self.self.SEPARATOR = "<self.SEPARATOR>"
+        self.SEPARATOR = "<self.SEPARATOR>"
         self.BUFFER_SIZE = 1024
+        
         print("Camera initialised")
 
     # ==========Log all actions==========
@@ -35,8 +37,6 @@ class Camera():
             
 
     # ==========Basic image capture & send to hub==========
-
-    # Take a picture
     def capt_img(self):
         """
         Basic picture taking with pi camera
@@ -56,12 +56,13 @@ class Camera():
         self.signaller.send_file(img_name, f"Camera shot from {self.name}")
         
     # ==========Video stream==========
+    # uses uv4f_raspicam now instead of motion - better framerate, larger image
     def start_motion(self):
-        subprocess.run(['sudo','service','motion','start']) 
+        subprocess.run(['sudo','service','uv4l_raspicam','start']) 
         self.signaller.message_to_hub("Starting live video")
     
     def stop_motion(self):
-        subprocess.run(['sudo','service','motion','stop'])
+        subprocess.run(['sudo','service','uv4f_raspicam','stop'])
         self.signaller.message_to_hub("Stopping live video")
         
     # ==========Object recognition==========

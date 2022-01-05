@@ -6,3 +6,5 @@
 *.png
 keys.py
 *.env
+project_env
+*cache

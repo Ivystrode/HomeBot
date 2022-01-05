@@ -10,10 +10,10 @@ class RemoteHub():
         self.BUFFER_SIZE = 1024
         self.SEPARATOR = "<SEPARATOR>"
         
-        self.send_port = config("LOCAL_SERVER_RECEIVE_PORT")
-        self.recv_port = config("REMOTE_SERVER_RECEIVE_PORT")
+        self.send_port = int(config("LOCAL_SERVER_RECV_PORT"))
+        self.recv_port = int(config("REMOTE_SERVER_RECV_PORT"))
         
-        self.local_server_listener = threading.Thread(target=self.local_server_listener)
+        self.local_server_listener_thread = threading.Thread(target=self.local_server_listener)
         
     def local_server_listener(self):
         while True:

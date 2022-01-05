@@ -83,51 +83,8 @@ def delete_reminder(detail):
     print("deleted")
 
 # ==========UNITS==========
-def get_unit_status(unitname):
-    unitname = unitname.lower()
-    print(f"[HUB] DATABASE: checking status of {unitname}")
-    conn=sqlite3.connect("hub_db.sqlite3")
-    cur = conn.cursor()
-
-    cur.execute("SELECT * from units WHERE name=?", (unitname,))
-    result = cur.fetchall()
-    
-    if result:
-        return result[0][4]
-    else:
-        print(f"{unitname} not found, it may not have checked in recently")
-        return "Not found"
-    
-def get_unit_address(unitname):
-    unitname = unitname.lower()
-    conn=sqlite3.connect("hub_db.sqlite3")
-    cur = conn.cursor()
-
-    cur.execute("SELECT * from units WHERE name=?", (unitname,))
-    result = cur.fetchall()
-    conn.close()
-    
-    if result:
-        return result[0][2]
-    else:
-        print(f"[HUB] DATABASE: {unitname} not found, it may not have checked in recently")
-        
-def get_unit_name(address):
-    conn=sqlite3.connect("hub_db.sqlite3")
-    cur = conn.cursor()
-
-    cur.execute("SELECT * from units WHERE address=?", (address,))
-    result = cur.fetchall()
-    conn.close()
-    
-    if result:
-        return result[0][1]
-    else:
-        print(f"[HUB] DATABASE: {address} not found, it may not have checked in recently")
-        return "UNKNOWN"
-        
 def get_all_units():    
-    conn=sqlite3.connect("hub_db.sqlite3")
+    conn=sqlite3.connect("bot_database.db")
     cur=conn.cursor()
     
     try:
@@ -139,24 +96,39 @@ def get_all_units():
         print("not found...")
         return "not found"
     
+def get_unit_address(unitname):
+    unitname = unitname.lower()
+    conn=sqlite3.connect("bot_database.db")
+    cur = conn.cursor()
+
+    cur.execute("SELECT * from units WHERE name=?", (unitname,))
+    result = cur.fetchall()
+    conn.close()
+    
+    if result:
+        return result[0][2]
+    else:
+        print(f"[HUB] DATABASE: {unitname} not found, it may not have checked in recently")
+
 def get_unit_name(address):    
-    conn=sqlite3.connect("hub_db.sqlite3")
+    conn=sqlite3.connect("bot_database.db")
     cur=conn.cursor()
     cur.execute("SELECT * FROM units WHERE address=?", (address,))
     rows=cur.fetchall()
     conn.close()
+    print(rows)
     return rows[0][1]
 
 def check_unit_status(address):
-    conn=sqlite3.connect("hub_db.sqlite3")
+    conn=sqlite3.connect("bot_database.db")
     cur=conn.cursor()
     cur.execute("SELECT * FROM units WHERE address=?", (address,))
     result=cur.fetchall()
     conn.close()
     return result[0][4] # status
     
-def insert(id, name, address, type, status):
-    conn=sqlite3.connect("hub_db.sqlite3", timeout=5)
+def insert_unit(id, name, address, type, status):
+    conn=sqlite3.connect("bot_database.db", timeout=5)
     cur=conn.cursor()
     try:
         cur.execute("INSERT INTO units VALUES (?, ?, ?, ?, ?)", (id, name.lower(), address, type, status))
@@ -167,14 +139,14 @@ def insert(id, name, address, type, status):
         conn.close()
     
 def delete(address):
-    conn=sqlite3.connect("hub_db.sqlite3")
+    conn=sqlite3.connect("bot_database.db")
     cur=conn.cursor()
     cur.execute("DELETE FROM units WHERE address=?", (address,)) 
     conn.commit()
     conn.close()
 
 def update_unit(address, status):
-    conn=sqlite3.connect("hub_db.sqlite3", timeout=10)
+    conn=sqlite3.connect("bot_database.db", timeout=10)
     cur=conn.cursor()
     cur.execute(f"UPDATE units SET status=? WHERE address=?", (status, address))
     conn.commit()

@@ -10,14 +10,15 @@ class HomeUnit():
     The main instance of the camera unit
     """
     
-    def __init__(self):
+    def __init__(self, unit_type):
         self.name = socket.gethostname()
         self.hub_addr = config("LOCAL_HUB_ADDRESS")
         self.id = random.randint(1, 1000000)
+        self.type = unit_type
         
-        self.receive_port = config("LOCAL_UNIT_RECV_PORT")
-        self.send_port = config("LOCAL_HUB_RECV_PORT")
-        self.file_send_port = config("LOCAL_HUB_FILE_RECV_PORT")
+        self.receive_port = int(config("LOCAL_UNIT_RECV_PORT"))
+        self.send_port = int(config("LOCAL_HUB_RECV_PORT"))
+        self.file_send_port = int(config("LOCAL_HUB_FILE_RECV_PORT"))
         
         self.camera = Camera(signaller=Signaller(self.hub_addr, 
                                                  self.send_port, 
@@ -32,7 +33,7 @@ class HomeUnit():
     def activate(self):
         self.hub_listener.start()       
         print("Activating...")
-        self.signaller.message_to_hub("Activated", self.id)
+        self.signaller.message_to_hub("Activated", str(self.id), self.type)
         print("Activation message sent")
         
     def listen_for_hub(self):
@@ -57,7 +58,7 @@ class HomeUnit():
         
     def start_object_detection(self):
         self.camera.object_detection_active = True
-        self.camera.im_recog()
+        self.camera.object_detection.start()
         
     def stop_object_detection(self):
         self.camera.object_detection_active = False
@@ -69,5 +70,5 @@ class HomeUnit():
         self.camera.stop_motion()
 
 if __name__ == '__main__':
-    unit = HomeUnit()
+    unit = HomeUnit("camera")
     unit.activate()
