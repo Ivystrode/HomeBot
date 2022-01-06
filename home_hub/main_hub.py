@@ -76,6 +76,9 @@ class HomeHub():
                 remote_name = cleaned_message[0]
                 message = cleaned_message[1]
                 print(f"Message from {remote_name} at {remote_address}: {message}")
+                
+                if cleaned_message[2] == "sendtobot":
+                    bot.send_message(message)
 
                 s.close()
                 

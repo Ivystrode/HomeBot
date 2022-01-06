@@ -59,15 +59,15 @@ class Camera():
         time.sleep(0.5)
         camera.close()
         print(f"Image saved as {img_name}")
-        self.signaller.send_file(img_name, f"Camera shot from {self.name}")
+        self.signaller.send_file(img_name, f"Camera shot from {self.name}", "photo")
         
     # ==========Video stream==========
     # uses uv4f_raspicam now instead of motion - better framerate, larger image
-    def start_motion(self):
+    def start_live_stream(self):
         subprocess.run(['sudo','service','uv4l_raspicam','start']) 
         self.signaller.message_to_hub("Starting live video")
     
-    def stop_motion(self):
+    def stop_live_stream(self):
         subprocess.run(['sudo','service','uv4f_raspicam','stop'])
         self.signaller.message_to_hub("Stopping live video")
         
@@ -130,7 +130,7 @@ class Camera():
                                             self.log(f"{datetime.now().strftime('%H%M')} - {labels[ClassInd-1]}_detected")
                                             detection = True
                                             print(f"{labels[ClassInd-1]} detected, dimensions: {boxes}, confidence: {round(float(conf*100), 1)}%")
-                                            self.signaller.send_file(imgfile, f"{self.name}: detected person at {datetime.now().strftime('%H%M%S')}")
+                                            self.signaller.send_file(imgfile, f"{self.name}: detected person at {datetime.now().strftime('%H%M%S')}", "detection image")
                                         
                         if detection:
                             # this is basically a timer that stops the pi saving millions of images

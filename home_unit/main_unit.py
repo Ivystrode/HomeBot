@@ -61,6 +61,11 @@ class HomeUnit():
 
                 if message == "start_object_detection":
                     self.start_object_detection()
+                if message == "send_photo":
+                    if not self.camera.object_detection_active:
+                        self.camera.capt_img()
+                    else:
+                        self.signaller.message_to_hub("Unable to take photo - object detection is using camera resource", "sendtobot")
                     
                 s.close()
                 
@@ -75,11 +80,11 @@ class HomeUnit():
     def stop_object_detection(self):
         self.camera.object_detection_active = False
         
-    def start_motion_stream(self):
-        self.camera.start_motion()
+    def start_live_stream(self):
+        self.camera.start_live_stream()
         
-    def stop_motion_stream(self):
-        self.camera.stop_motion()
+    def stop_live_stream(self):
+        self.camera.stop_live_stream()
 
 if __name__ == '__main__':
     unit = HomeUnit("camera")
