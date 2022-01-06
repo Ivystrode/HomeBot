@@ -63,8 +63,10 @@ class HomeUnit():
                     self.start_object_detection()
                 if message == "send_photo":
                     if not self.camera.object_detection_active:
+                        print("Taking picture")
                         self.camera.capt_img()
                     else:
+                        print("Object detection active, can't take picture")
                         self.signaller.message_to_hub("Unable to take photo - object detection is using camera resource", "sendtobot")
                     
                 s.close()
@@ -73,8 +75,12 @@ class HomeUnit():
                 print(f"Receive from local network error: {e}")
         
     def start_object_detection(self):
-        self.camera.object_detection_active = True
-        self.camera.object_detection.start()
+        try:
+            self.camera.object_detection_active = True
+            self.camera.object_detection.start()
+        except Exception as e:
+            self.signaller.message_to_hub(f"Unable to start object detection: {e}", "senttobot")
+            self.camera.object_detection_active = False
             
         
     def stop_object_detection(self):

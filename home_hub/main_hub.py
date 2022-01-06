@@ -32,11 +32,14 @@ class HomeHub():
 
         
     def activate_hub(self):
+        print("Activating hub")
         if not self.testing:
             bot.activate_bot()
+            print("Bot active")
         self.unit_listener_thread.start()
         self.file_listener_thread.start()
         self.remote_server_listener_thread.start()
+        print("Hub active")
         
     def unit_listener(self):
         while True:

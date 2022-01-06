@@ -51,7 +51,7 @@ class Camera():
         img_name = datetime.now().strftime("%Y%m%d-%H%M%S") + "-" + str(self.name) + ".jpg"
         camera = PiCamera()
         camera.resolution = (1024, 768)
-        camera.vflip = True
+        # camera.vflip = True
         camera.hflip = True
         camera.start_preview()
         time.sleep(0.5) # apparently camera has to "warm up"

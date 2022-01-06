@@ -13,6 +13,7 @@ class Signaller():
         self.port = port
         self.file_port = file_port
         self.SEPARATOR = "<SEPARATOR>"
+        self.BUFFER_SIZE = 1024
         print(f"Signaller:\nHub: {self.hub_addr}\nPort:{str(self.port)}")
         
     def message_to_hub(self, message, *args):

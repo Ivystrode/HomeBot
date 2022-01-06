@@ -31,6 +31,7 @@ def start_bot():
     dispatcher.add_handler(CommandHandler('showreminders', reminders.showreminders))
     dispatcher.add_handler(CommandHandler('detection', start_object_detection))
     dispatcher.add_handler(CommandHandler('stopdetection', stop_object_detection))
+    dispatcher.add_handler(CommandHandler('sendpic', send_pic))
     
     updater.start_polling()
     updater.idle()
@@ -65,6 +66,21 @@ def stop_object_detection(update, context):
             for unit in bot_db.get_all_units():
                 commands.send_command(unit[1], "stop_object_detection")
             update.message.reply_text("Telling all units to stop object detection")
+    except Exception as e:
+        update.message.reply_text("Something went wrong")
+        update.message.reply_text(f"{e}")
+        
+def send_pic(update, context):
+    try:
+        if len(context.args) == 0:
+            for unit in bot_db.get_all_units():
+                commands.send_command(unit[1], "send_photo")
+            update.message.reply_text("Getting picture from all units")
+        else:
+            for unit in context.args:
+                unitname = bot_db.get_unit_address(unit)
+                commands.send_command(unitname, "send_photo")
+                update.message.reply_text(f"Getting picture from {unitname}...")
     except Exception as e:
         update.message.reply_text("Something went wrong")
         update.message.reply_text(f"{e}")
@@ -132,7 +148,6 @@ ip_monitor_thread = threading.Thread(name='ip_monitor', target=ip_monitor)
 reminder_thread = threading.Thread(name='reminder_checker', target=reminders.remindchecker)
 
 def activate_bot():
-    pass
-    # bot_thread.start()
-    # ip_monitor_thread.start()
-    # reminder_thread.start()
+    bot_thread.start()
+    ip_monitor_thread.start()
+    reminder_thread.start()
