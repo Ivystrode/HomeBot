@@ -4,6 +4,8 @@
 
 The home_hub directory files run on the PINAS
 
+***Need to make bot able to send command to main_hub (to start/stop wifi scans)***
+
 ### Remote Hub
 
 The remote_hub files run on the remote machine (Linode instance)

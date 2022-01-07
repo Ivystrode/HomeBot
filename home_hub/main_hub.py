@@ -1,20 +1,25 @@
+import os
 from decouple import config
+from datetime import datetime
 from tqdm import tqdm
 
-import ntpath, socket, threading
-import bot, bot_db
+import ntpath, socket, subprocess, threading, time
+import bot, bot_db, wifi
 
 class HomeHub():
     """
     The instance of the home hub
     Runs the bot, wifi scanner, and other things
     """
-    def __init__(self, testing=False) -> None:
+    def __init__(self, testing=False, scanning=True) -> None:
         
         # setup
         self.BUFFER_SIZE = 1024
         self.SEPARATOR = "<SEPARATOR>"
         self.testing = testing
+        
+        # Wifi scanner
+        self.wifi_scanner = wifi.WifiScanner(scanning=scanning)
         
         # Remote server
         self.remote_recv_port = int(config("LOCAL_SERVER_RECV_PORT")) # listen on this
@@ -25,9 +30,10 @@ class HomeHub():
         self.unit_send_port = int(config("LOCAL_UNIT_RECV_PORT")) # send on this
         self.file_recv_port = int(config("LOCAL_HUB_FILE_RECV_PORT")) # listen on this
         
-        self.unit_listener_thread = threading.Thread(target=self.unit_listener)
-        self.remote_server_listener_thread = threading.Thread(target=self.remote_server_listener)
-        self.file_listener_thread = threading.Thread(target=self.file_listener)
+        # Socket listeners
+        self.unit_listener_thread = threading.Thread(target=self.unit_listener, daemon=True)
+        self.remote_server_listener_thread = threading.Thread(target=self.remote_server_listener, daemon=True)
+        self.file_listener_thread = threading.Thread(target=self.file_listener, daemon=True)
         
 
         
@@ -39,6 +45,7 @@ class HomeHub():
         self.unit_listener_thread.start()
         self.file_listener_thread.start()
         self.remote_server_listener_thread.start()
+        self.wifi_scanner.scan_thread.start()
         print("Hub active")
         
     def unit_listener(self):
@@ -61,6 +68,9 @@ class HomeHub():
                 if message.lower() == "activated":
                     print("add to db")
                     bot_db.insert_unit(int(cleaned_message[2]), cleaned_message[0], unit_address[0], cleaned_message[3], message)
+                    
+                if cleaned_message[2] == "sendtobot":
+                    bot.send_message(message)
                 
             except Exception as e:
                 print(f"Receive from local network error: {e}")
@@ -134,6 +144,12 @@ class HomeHub():
                 
             except Exception as e:
                 print(f"Receive from local network error: {e}")
+                
+
+        
+
+        
+        
                 
 if __name__ == '__main__':
     hub = HomeHub()

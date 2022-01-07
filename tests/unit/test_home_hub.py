@@ -15,7 +15,7 @@ def test_add_unit_over_socket():
     hub_addr = "192.168.1.79"
     sep = "<SEPARATOR>"
     
-    hub = main.HomeHub(testing=True)
+    hub = main_hub.HomeHub(testing=True)
     hub.activate_hub()
     time.sleep(2)
     

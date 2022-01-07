@@ -1,7 +1,6 @@
-import random, socket, threading 
+import os, random, socket, threading, time
 from decouple import config
 
-# import cam
 from signaller import Signaller
 from cam import Camera
 
@@ -12,19 +11,25 @@ class HomeUnit():
     
     def __init__(self, unit_type, testing=False):
         self.name = socket.gethostname()
+        
         if not testing:
             self.hub_addr = config("LOCAL_HUB_ADDRESS")
         else:
             self.hub_addr = socket.gethostbyname(socket.gethostname())
-        self.id = random.randint(1, 1000000)
-        self.type = unit_type
-        self.testing = testing
-        
+            
         self.receive_port = int(config("LOCAL_UNIT_RECV_PORT"))
         self.send_port = int(config("LOCAL_HUB_RECV_PORT"))
         self.file_send_port = int(config("LOCAL_HUB_FILE_RECV_PORT"))
         self.BUFFER_SIZE = 1024
         self.SEPARATOR = "<SEPARATOR>"
+            
+        self.id = random.randint(1, 1000000)
+        self.type = unit_type
+        self.testing = testing
+        
+        # stops it sending core temp warnings constantly
+        self.temp_warning_timer = threading.Thread(target=self.warning_countdown)
+        self.temp_warnings_enabled = True
         
         self.camera = Camera(signaller=Signaller(self.hub_addr, 
                                                  self.send_port, 
@@ -68,8 +73,22 @@ class HomeUnit():
                     else:
                         print("Object detection active, can't take picture")
                         self.signaller.message_to_hub("Unable to take photo - object detection is using camera resource", "sendtobot")
+
+                # USING THE STRING AS THE FUNCTION NAME TO CALL:
+                # command = getattr(self, message)
+                # try:
+                #     command()
+                # except Exception as e:
+                #     print("MAIN: Message not recognised as command (error: {e}).")
                     
                 s.close()
+                
+                # check temperature
+                core_temp = os.popen("vcgencmd measure_temp").read()[5:9]
+                core_temp = float(core_temp)
+                if core_temp > 65.0 and self.temp_warnings_enabled:
+                    self.signaller.message_to_hub(f"Core temperature warning - {core_temp}", "sendtobot")
+                    self.temp_warnings_enabled = False
                 
             except Exception as e:
                 print(f"Receive from local network error: {e}")
@@ -91,6 +110,10 @@ class HomeUnit():
         
     def stop_live_stream(self):
         self.camera.stop_live_stream()
+        
+    def warning_countdown(self):
+        time.sleep(1800)
+        self.temp_warnings_enabled = True
 
 if __name__ == '__main__':
     unit = HomeUnit("camera")

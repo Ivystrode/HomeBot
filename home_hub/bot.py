@@ -29,8 +29,13 @@ def start_bot():
     dispatcher.add_handler(CommandHandler('ip', ip_check))
     dispatcher.add_handler(reminders.reminder_handler)
     dispatcher.add_handler(CommandHandler('showreminders', reminders.showreminders))
+    
     dispatcher.add_handler(CommandHandler('detection', start_object_detection))
     dispatcher.add_handler(CommandHandler('stopdetection', stop_object_detection))
+    
+    dispatcher.add_handler(CommandHandler('wifiscan', start_wifi_scan))    
+    dispatcher.add_handler(CommandHandler('stopwifiscan', stop_wifi_scan))    
+    
     dispatcher.add_handler(CommandHandler('sendpic', send_pic))
     
     updater.start_polling()
@@ -70,6 +75,12 @@ def stop_object_detection(update, context):
         update.message.reply_text("Something went wrong")
         update.message.reply_text(f"{e}")
         
+def start_wifi_scan(update, context):
+    update.message.reply_text("Starting the wifi scanner...")
+
+def stop_wifi_scan(update, context):
+    update.message.reply_text("Stopping the wifi scanner...")
+        
 def send_pic(update, context):
     try:
         if len(context.args) == 0:
@@ -78,9 +89,8 @@ def send_pic(update, context):
             update.message.reply_text("Getting picture from all units")
         else:
             for unit in context.args:
-                unitname = bot_db.get_unit_address(unit)
-                commands.send_command(unitname, "send_photo")
-                update.message.reply_text(f"Getting picture from {unitname}...")
+                commands.send_command(unit, "send_photo")
+                update.message.reply_text(f"Getting picture from {unit}...")
     except Exception as e:
         update.message.reply_text("Something went wrong")
         update.message.reply_text(f"{e}")
