@@ -1,4 +1,4 @@
-import cv2, os, socket, subprocess, time, threading
+import cv2, os, socket, subprocess, time, threading, multiprocessing
 import numpy as np
 from datetime import datetime
 
@@ -21,8 +21,7 @@ class Camera():
         self.signaller = signaller
         
         # trying this
-        self.detection_stop = threading.Event()
-        self.object_detection = threading.Thread(target=self.im_recog) # no need to thread - its the only thing the camera will be doing anyway
+        self.object_detection = multiprocessing.Process(target=self.im_recog) # no need to thread - its the only thing the camera will be doing anyway
         # YES actually so we can turn it off with a boolean - sort of. It stops the detection so we can use the camera but it leaves the thread running.
         # then we cant restart detection because the thread is alreadyrunning
         
@@ -120,14 +119,8 @@ class Camera():
             
         print("detecting active")
         self.signaller.message_to_hub("Object detection active", "sendtobot")
-        # while True:
-        while not self.detection_stop.is_set():
+        while True:
             
-            if not self.object_detection_active:
-                self.detection_stop.set()
-                print("Ending detection")
-                # detection_stop.wait()
-                break
             if self.object_detection_active:
                 if not self.testing:
                     for frame in camera.capture_continuous(raw_capture, format="bgr", use_video_port=True):
@@ -137,9 +130,7 @@ class Camera():
                         ClassIndex, confidence, bbox = model.detect(image, confThreshold=0.55)
 
                         if not self.object_detection_active:
-                            self.detection_stop.set()
                             print("Ending detection")
-                            # detection_stop.wait()
                             break
 
                         if len(ClassIndex) != 0:
@@ -175,6 +166,7 @@ class Camera():
                     break
             
         print("end of detection")
+        self.object_detection.terminate()
         self.signaller.message_to_hub("Object detection deactivated", "sendtobot")
         camera.close()
         cv2.destroyAllWindows()
