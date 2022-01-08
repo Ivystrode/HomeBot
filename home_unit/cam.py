@@ -19,12 +19,13 @@ class Camera():
     
     def __init__(self, signaller, testing=False) -> None:
         self.signaller = signaller
-        self.object_detection = threading.Thread(target=self.im_recog) # no need to thread - its the only thing the camera will be doing anyway
-        # YES actually so we can turn it off with a boolean - sort of. It stops the detection so we can use the camera but it leaves the thread running.
-        # then we cant restart detection because the thread is alreadyrunning
         
         # trying this
         self.detection_stop = threading.Event()
+        self.object_detection = threading.Thread(target=self.im_recog, args=(self.detection_stop)) # no need to thread - its the only thing the camera will be doing anyway
+        # YES actually so we can turn it off with a boolean - sort of. It stops the detection so we can use the camera but it leaves the thread running.
+        # then we cant restart detection because the thread is alreadyrunning
+        
         
         self.testing = testing
     
@@ -83,7 +84,7 @@ class Camera():
     def stop_im_recog(self):
         self.detection_stop.set()
     
-    def im_recog(self, counts_before_detect_again=60):
+    def im_recog(self, detection_stop counts_before_detect_again=60):
         """
         Runs image detection model on the pi, saves pictures of people
         """
@@ -120,11 +121,11 @@ class Camera():
         print("detecting active")
         self.signaller.message_to_hub("Object detection active", "sendtobot")
         # while True:
-        while not self.detection_stop.is_set():
+        while not detection_stop.is_set():
             
             if not self.object_detection_active:
                 print("Ending detection")
-                self.detection_stop.wait()
+                detection_stop.wait()
                 break
             if self.object_detection_active:
                 if not self.testing:
