@@ -1,4 +1,4 @@
-import os, random, socket
+import os, random, socket, time
 from decouple import config
 from tqdm import tqdm
 
@@ -43,7 +43,7 @@ class Signaller():
         fdencoded = filedetails.encode()
         print(filedetails)
         print(fdencoded)
-        s.sendall(filedetails)
+        s.sendall(fdencoded)
         time.sleep(1)
         try:
             progress = tqdm(range(filesize), f"Sending {file}", unit="B", unit_scale=True, unit_divisor=1024)
