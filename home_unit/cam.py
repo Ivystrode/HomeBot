@@ -1,4 +1,4 @@
-import cv2, os, socket, subprocess, time, threading, multiprocessing
+import cv2, os, socket, subprocess, time, threading
 import numpy as np
 from datetime import datetime
 
@@ -21,7 +21,8 @@ class Camera():
         self.signaller = signaller
         
         # trying this
-        self.object_detection = multiprocessing.Process(target=self.im_recog) # no need to thread - its the only thing the camera will be doing anyway
+        self.detection_stop = threading.Event()
+        self.object_detection = threading.Thread(target=self.im_recog, args=(1, self.detection_stop)) # no need to thread - its the only thing the camera will be doing anyway
         # YES actually so we can turn it off with a boolean - sort of. It stops the detection so we can use the camera but it leaves the thread running.
         # then we cant restart detection because the thread is alreadyrunning
         
@@ -80,10 +81,10 @@ class Camera():
         self.signaller.message_to_hub("Stopping live video")
         
     # ==========Object recognition==========
-    # def stop_im_recog(self):
-    #     self.detection_stop.set()
+    def stop_im_recog(self):
+        self.detection_stop.set()
     
-    def im_recog(self, counts_before_detect_again=60):
+    def im_recog(self, dontneedthisarg, detection_stop, counts_before_detect_again=60):
         """
         Runs image detection model on the pi, saves pictures of people
         """
@@ -119,8 +120,14 @@ class Camera():
             
         print("detecting active")
         self.signaller.message_to_hub("Object detection active", "sendtobot")
-        while True:
+        # while True:
+        while not detection_stop.is_set():
             
+            if not self.object_detection_active:
+                self.detection_stop.set()
+                print("Ending detection")
+                # detection_stop.wait()
+                break
             if self.object_detection_active:
                 if not self.testing:
                     for frame in camera.capture_continuous(raw_capture, format="bgr", use_video_port=True):
@@ -128,8 +135,8 @@ class Camera():
                         image = frame.array
 
                         ClassIndex, confidence, bbox = model.detect(image, confThreshold=0.55)
-
                         if not self.object_detection_active:
+                            self.detection_stop.set()
                             print("Ending detection")
                             break
 
@@ -166,7 +173,6 @@ class Camera():
                     break
             
         print("end of detection")
-        self.object_detection.terminate()
         self.signaller.message_to_hub("Object detection deactivated", "sendtobot")
         camera.close()
         cv2.destroyAllWindows()
