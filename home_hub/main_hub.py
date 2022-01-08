@@ -70,7 +70,7 @@ class HomeHub():
                     bot_db.insert_unit(int(cleaned_message[2]), cleaned_message[0], unit_address[0], cleaned_message[3], message)
                     
                 if cleaned_message[2] == "sendtobot":
-                    bot.send_message(message)
+                    bot.send_message(message, unitname=unit_name)
                 
             except Exception as e:
                 print(f"Unit listener: Receive from local network error: {e}")

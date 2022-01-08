@@ -121,7 +121,9 @@ def ip_monitor():
             
         time.sleep(1800)
         
-def send_message(message):
+def send_message(message, unitname=None):
+    if unitname is not None:
+        message = unitname + ": " + message
     for user in bot_db.get_all_users():
         updater.bot.send_message(user[0], message)
         
