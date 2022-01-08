@@ -74,7 +74,8 @@ class HomeUnit():
                         print("Object detection active, can't take picture")
                         self.signaller.message_to_hub("Unable to take photo - object detection is using camera resource", "sendtobot")
                 if message == "reboot":
-                    subprocess.run("sudo reboot now")
+                    print("REBOOTING")
+                    subprocess.run(['sudo','reboot','now'])
 
                 # USING THE STRING AS THE FUNCTION NAME TO CALL:
                 # command = getattr(self, message)
