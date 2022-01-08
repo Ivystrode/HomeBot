@@ -38,6 +38,8 @@ def start_bot():
     
     dispatcher.add_handler(CommandHandler('sendpic', send_pic))
     
+    dispatcher.add_handler(CommandHandler('reboot', reboot))
+    
     updater.start_polling()
     updater.idle()
     
@@ -91,6 +93,20 @@ def send_pic(update, context):
             for unit in context.args:
                 commands.send_command(unit, "send_photo")
                 update.message.reply_text(f"Getting picture from {unit}...")
+    except Exception as e:
+        update.message.reply_text("Something went wrong")
+        update.message.reply_text(f"{e}")
+ 
+def reboot(update, context):
+    try:
+        if len(context.args) == 0:
+            for unit in bot_db.get_all_units():
+                commands.send_command(unit[1], "reboot")
+            update.message.reply_text("Rebooting all units")
+        else:
+            for unit in context.args:
+                commands.send_command(unit, "reboot")
+                update.message.reply_text(f"Rebooting {unit}...")
     except Exception as e:
         update.message.reply_text("Something went wrong")
         update.message.reply_text(f"{e}")

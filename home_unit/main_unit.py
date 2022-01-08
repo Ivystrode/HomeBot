@@ -1,4 +1,4 @@
-import os, random, socket, threading, time
+import os, random, socket, subprocess, threading, time
 from decouple import config
 
 from signaller import Signaller
@@ -73,6 +73,8 @@ class HomeUnit():
                     else:
                         print("Object detection active, can't take picture")
                         self.signaller.message_to_hub("Unable to take photo - object detection is using camera resource", "sendtobot")
+                if message == "reboot":
+                    subprocess.run("sudo reboot now")
 
                 # USING THE STRING AS THE FUNCTION NAME TO CALL:
                 # command = getattr(self, message)
