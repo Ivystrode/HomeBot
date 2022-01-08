@@ -121,8 +121,10 @@ class Camera():
         self.signaller.message_to_hub("Object detection active", "sendtobot")
         # while True:
         while not self.detection_stop.is_set():
+            
             if not self.object_detection_active:
                 print("Ending detection")
+                self.detection_stop.wait()
                 break
             if self.object_detection_active:
                 if not self.testing:
