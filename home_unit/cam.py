@@ -135,8 +135,11 @@ class Camera():
                         image = frame.array
 
                         ClassIndex, confidence, bbox = model.detect(image, confThreshold=0.55)
+
                         if not self.object_detection_active:
+                            self.detection_stop.set()
                             print("Ending detection")
+                            # detection_stop.wait()
                             break
 
                         if len(ClassIndex) != 0:
