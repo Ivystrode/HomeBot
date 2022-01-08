@@ -104,7 +104,7 @@ class HomeUnit():
         
     def stop_object_detection(self):
         self.camera.object_detection_active = False
-        self.camera.stop_im_recog()
+        # self.camera.stop_im_recog()
         
     def start_live_stream(self):
         self.camera.start_live_stream()
