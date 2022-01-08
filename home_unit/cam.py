@@ -84,7 +84,7 @@ class Camera():
     def stop_im_recog(self):
         self.detection_stop.set()
     
-    def im_recog(self, detection_stop counts_before_detect_again=60):
+    def im_recog(self, detection_stop, counts_before_detect_again=60):
         """
         Runs image detection model on the pi, saves pictures of people
         """
