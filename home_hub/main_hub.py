@@ -113,7 +113,7 @@ class HomeHub():
                 print(f"[HUB] Incoming file from {unit_name}")
                 
                 try:
-                    received = file_socket.recv(self.BUFFER_SIZE).decode()
+                    received = file_socket.recv(self.BUFFER_SIZE).decode("utf-8")
                 except:
                     received = file_socket.recv(self.BUFFER_SIZE).decode("iso-8859-1")
                 print(received)

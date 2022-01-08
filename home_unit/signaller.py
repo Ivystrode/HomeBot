@@ -43,7 +43,8 @@ class Signaller():
         fdencoded = filedetails.encode()
         print(filedetails)
         print(fdencoded)
-        s.send(filedetails)
+        s.sendall(filedetails)
+        time.sleep(1)
         try:
             progress = tqdm(range(filesize), f"Sending {file}", unit="B", unit_scale=True, unit_divisor=1024)
             with open(file, "rb") as f:

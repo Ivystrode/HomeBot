@@ -156,7 +156,7 @@ class Camera():
                 break
             
         print("end of detection")
-        self.signaller.message_to_hub("Object detection deactivated")
+        self.signaller.message_to_hub("Object detection deactivated", "sendtobot")
         camera.close()
         cv2.destroyAllWindows()
         

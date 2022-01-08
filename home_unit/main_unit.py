@@ -98,7 +98,7 @@ class HomeUnit():
             self.camera.object_detection_active = True
             self.camera.object_detection.start()
         except Exception as e:
-            self.signaller.message_to_hub(f"Unable to start object detection: {e}", "senttobot")
+            self.signaller.message_to_hub(f"Unable to start object detection: {e}", "sendtobot")
             self.camera.object_detection_active = False
             
         
