@@ -39,7 +39,7 @@ class Signaller():
         filesize = os.path.getsize(file)
 
         print(f"Sending file: {file}")
-        s.send(f"{file}{self.SEPARATOR}{filesize}{self.SEPARATOR}{file_description}{self.SEPARATOR}{file_type}".encode())
+        s.send(f"{file}{self.SEPARATOR}{filesize}{self.SEPARATOR}{file_description}{self.SEPARATOR}{file_type}".encode(encoding="iso-8859-1"))
         try:
             progress = tqdm(range(filesize), f"Sending {file}", unit="B", unit_scale=True, unit_divisor=1024)
             with open(file, "rb") as f:

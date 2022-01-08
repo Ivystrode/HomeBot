@@ -116,7 +116,6 @@ def get_unit_name(address):
     cur.execute("SELECT * FROM units WHERE address=?", (address,))
     rows=cur.fetchall()
     conn.close()
-    print(rows)
     return rows[0][1]
 
 def check_unit_status(address):
