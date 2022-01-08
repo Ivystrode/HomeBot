@@ -14,7 +14,7 @@ class HomeHub():
     def __init__(self, testing=False, scanning=True) -> None:
         
         # setup
-        self.BUFFER_SIZE = 4096
+        self.BUFFER_SIZE = 1024
         self.SEPARATOR = "<SEPARATOR>"
         self.testing = testing
         
@@ -101,52 +101,57 @@ class HomeHub():
         
     def file_listener(self):
         while True:
+            print("listening for files")
             s = socket.socket()
             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             s.bind(('0.0.0.0',self.file_recv_port))
             s.listen(5)
-            # try:
-            file_socket, unit_address = s.accept() # did i close this??
-            unit_name = bot_db.get_unit_name(unit_address[0])
-            print(f"[HUB] Incoming file from {unit_name}")
-            
+            print("listening")
             try:
-                received = file_socket.recv(self.BUFFER_SIZE).decode()
-            except:
-                received = file_socket.recv(self.BUFFER_SIZE).decode("iso-8859-1")
+                file_socket, unit_address = s.accept() # did i close this??
+                unit_name = bot_db.get_unit_name(unit_address[0])
+                print(f"[HUB] Incoming file from {unit_name}")
                 
-            # if unit_name is not None:
-                
-            print(f"[HUB] Receiving file from {unit_name}")
-            print(received.split(self.SEPARATOR))
-            file, filesize, file_description, file_type = received.split(self.SEPARATOR)
-            filesize = int(filesize)
-            print(filesize)
-            filename = ntpath.basename(file)
-            print(filename)
-            print("got here")
-            progress = tqdm(range(filesize), f"[HUB] Progress {filename}", unit="B", unit_scale=True, unit_divisor=1024)
-            with open(filename, "wb") as f: 
-                for _ in progress:
-                    bytes_read = file_socket.recv(self.BUFFER_SIZE)
-                    if not bytes_read:
+                try:
+                    received = file_socket.recv(self.BUFFER_SIZE).decode()
+                except:
+                    received = file_socket.recv(self.BUFFER_SIZE).decode("iso-8859-1")
+                print(received)
+                # if unit_name is not None:
+                    
+                print(f"[HUB] Receiving file from {unit_name}")
+                # time.sleep(1)
+                print(received.split(self.SEPARATOR))
+                file, filesize, file_description, file_type = received.split(self.SEPARATOR)
+                filesize = int(filesize)
+                print(filesize)
+                filename = ntpath.basename(file)
+                print(filename)
+                print("got here")
+                progress = tqdm(range(filesize), f"[HUB] Progress {filename}", unit="B", unit_scale=True, unit_divisor=1024)
+                with open(filename, "wb") as f: 
+                    for _ in progress:
+                        bytes_read = file_socket.recv(self.BUFFER_SIZE)
+                        if not bytes_read:
 
-                        break
-                    f.write(bytes_read)
-                    progress.update(len(bytes_read))
-            print("ok now received now send to bot")
-            # send to bot to send to users
-            try:
-                bot.send_message(f"{file_type} incoming from {unit_name}...")
-                bot.send_file(unit_name, filename, file_description)
+                            break
+                        f.write(bytes_read)
+                        progress.update(len(bytes_read))
+                print("ok now received now send to bot")
+                # send to bot to send to users
+                try:
+                    bot.send_message(f"{file_type} incoming from {unit_name}...")
+                    bot.send_file(unit_name, filename, file_description)
+                except Exception as e:
+                    bot.send_message(f"File send attempt failed: {e}")
+                
+                # s.close()
+                # print("SOCKET CLOSED")
+                
+                
             except Exception as e:
-                bot.send_message(f"File send attempt failed: {e}")
-            
-            s.close()
-                
-                
-            # except Exception as e:
-            #     print(f"File listener: Receive from local network error: {e}")
+                print(f"File listener: Receive from local network error: {e}")
+                # s.close()
                 
 
         

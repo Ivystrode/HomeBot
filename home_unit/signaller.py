@@ -39,23 +39,36 @@ class Signaller():
         filesize = os.path.getsize(file)
 
         print(f"Sending file: {file}")
-        s.send(f"{file}{self.SEPARATOR}{filesize}{self.SEPARATOR}{file_description}{self.SEPARATOR}{file_type}".encode(encoding="iso-8859-1"))
-        try:
-            progress = tqdm(range(filesize), f"Sending {file}", unit="B", unit_scale=True, unit_divisor=1024)
-            with open(file, "rb") as f:
-                for _ in progress:
-                    try:
-                        bytes_read = f.read(self.BUFFER_SIZE)
+        s.send(f"{file}{self.SEPARATOR}{filesize}{self.SEPARATOR}{file_description}{self.SEPARATOR}{file_type}".encode())
+        
+        f = open(file, "rb")
+        while True:
+            l = f.read(self.BUFFER_SIZE)
+            while l:
+                s.send(l) 
+                l = f.read(self.BUFFER_SIZE)
+            if not l:
+                f.close()
+                s.close()
+                break
+        print("Sent====================")
+        
+        # try:
+        #     progress = tqdm(range(filesize), f"Sending {file}", unit="B", unit_scale=True, unit_divisor=1024)
+        #     with open(file, "rb") as f:
+        #         for _ in progress:
+        #             try:
+        #                 bytes_read = f.read(self.BUFFER_SIZE)
                         
-                        if not bytes_read:
-                            break
+        #                 if not bytes_read:
+        #                     break
                         
-                        s.sendall(bytes_read)
-                        progress.update(len(bytes_read))
-                    except Exception as e:
-                        print(f"FILE SEND ERROR: {e}")
-                        break
-        except Exception as e:
-            print(f"FILE SEND ERROR - outside - {e}")
-        print(f"{file} sent to hub")
-        s.close()
+        #                 s.sendall(bytes_read)
+        #                 progress.update(len(bytes_read))
+        #             except Exception as e:
+        #                 print(f"FILE SEND ERROR: {e}")
+        #                 break
+        # except Exception as e:
+        #     print(f"FILE SEND ERROR - outside - {e}")
+        # print(f"{file} sent to hub")
+        # s.close()
