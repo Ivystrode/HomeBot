@@ -118,10 +118,13 @@ class HomeHub():
                 if unit_name is not None:
                     
                     print(f"[HUB] Receiving file from {unit_name}")
+                    print(received.split(self.SEPARATOR))
                     file, filesize, file_description, file_type = received.split(self.SEPARATOR)
                     filesize = int(filesize)
+                    print(filesize)
                     filename = ntpath.basename(file)
-                    
+                    print(filename)
+                    print("got here")
                     progress = tqdm(range(filesize), f"[HUB] Progress {filename}", unit="B", unit_scale=True, unit_divisor=1024)
                     with open(filename, "wb") as f: 
                         for _ in progress:
@@ -131,7 +134,7 @@ class HomeHub():
                                 break
                             f.write(bytes_read)
                             progress.update(len(bytes_read))
-                            
+                    print("ok now received now send to bot")
                     # send to bot to send to users
                     try:
                         bot.send_message(f"{file_type} incoming from {unit_name}...")
@@ -152,5 +155,5 @@ class HomeHub():
         
                 
 if __name__ == '__main__':
-    hub = HomeHub()
+    hub = HomeHub(scanning=False)
     hub.activate_hub()

@@ -27,6 +27,8 @@ class Camera():
         self.name = socket.gethostname()
         self.object_detection_active = False
         self.detection_duration = 30
+        
+        self.stream_active=True
 
         self.font_scale = 2
         self.font = cv2.FONT_HERSHEY_PLAIN
@@ -65,10 +67,12 @@ class Camera():
     # uses uv4f_raspicam now instead of motion - better framerate, larger image
     def start_live_stream(self):
         subprocess.run(['sudo','service','uv4l_raspicam','start']) 
+        self.stream_active = True
         self.signaller.message_to_hub("Starting live video")
     
     def stop_live_stream(self):
         subprocess.run(['sudo','service','uv4f_raspicam','stop'])
+        self.stream_active = False
         self.signaller.message_to_hub("Stopping live video")
         
     # ==========Object recognition==========
@@ -100,8 +104,8 @@ class Camera():
         
         camera = PiCamera()
         camera.resolution = (1024, 768)
-        camera.vflip = True
-        camera.hflip = True
+        # camera.vflip = True
+        # camera.hflip = True
         camera.framerate = 32
         raw_capture = PiRGBArray(camera, size=(1024, 768))
         time.sleep(1)
@@ -126,11 +130,11 @@ class Camera():
 
                                         if not detection:
                                             imgfile = f'{labels[ClassInd-1].capitalize()}_detection_{datetime.now().strftime("%H%M%S")}.jpg'
-                                            cv2.imwrite(f'{labels[ClassInd-1].capitalize()} detection_{datetime.now().strftime("%H%M%S")}.jpg', image)
+                                            cv2.imwrite(f'{imgfile}, image')
                                             self.log(f"{datetime.now().strftime('%H%M')} - {labels[ClassInd-1]}_detected")
                                             detection = True
                                             print(f"{labels[ClassInd-1]} detected, dimensions: {boxes}, confidence: {round(float(conf*100), 1)}%")
-                                            self.signaller.send_file(imgfile, f"{self.name}: detected person at {datetime.now().strftime('%H%M%S')}", "detection image")
+                                            self.signaller.send_file(imgfile, f"{self.name}: detected person at {datetime.now().strftime('%H%M%S')}", "photo")
                                         
                         if detection:
                             # this is basically a timer that stops the pi saving millions of images

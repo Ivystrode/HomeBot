@@ -66,6 +66,8 @@ class HomeUnit():
 
                 if message == "start_object_detection":
                     self.start_object_detection()
+                if message == "stop_object_detection":
+                    self.stop_object_detection()
                 if message == "send_photo":
                     if not self.camera.object_detection_active:
                         print("Taking picture")
@@ -86,7 +88,7 @@ class HomeUnit():
                 # check temperature
                 core_temp = os.popen("vcgencmd measure_temp").read()[5:9]
                 core_temp = float(core_temp)
-                if core_temp > 65.0 and self.temp_warnings_enabled:
+                if core_temp > 55.0 and self.temp_warnings_enabled:
                     self.signaller.message_to_hub(f"Core temperature warning - {core_temp}", "sendtobot")
                     self.temp_warnings_enabled = False
                 
