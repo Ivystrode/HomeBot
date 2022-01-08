@@ -43,9 +43,7 @@ class HomeUnit():
         self.hub_listener = threading.Thread(target=self.listen_for_hub)
         
         
-    def activate(self):
-        self.hub_listener.start()       
-        print("Activating...")
+        self.hub_listener.start()     
         self.signaller.message_to_hub("Activated", str(self.id), self.type)
         print("Activation message sent")
         
@@ -119,4 +117,3 @@ class HomeUnit():
 
 if __name__ == '__main__':
     unit = HomeUnit("camera")
-    unit.activate()

@@ -130,7 +130,7 @@ class Camera():
 
                                         if not detection:
                                             imgfile = f'{labels[ClassInd-1].capitalize()}_detection_{datetime.now().strftime("%H%M%S")}.jpg'
-                                            cv2.imwrite(f'{imgfile}, image')
+                                            cv2.imwrite(f'{imgfile}', image)
                                             self.log(f"{datetime.now().strftime('%H%M')} - {labels[ClassInd-1]}_detected")
                                             detection = True
                                             print(f"{labels[ClassInd-1]} detected, dimensions: {boxes}, confidence: {round(float(conf*100), 1)}%")
