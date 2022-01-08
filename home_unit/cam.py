@@ -54,7 +54,7 @@ class Camera():
         camera = PiCamera()
         camera.resolution = (1024, 768)
         # camera.vflip = True
-        camera.hflip = True
+        # camera.hflip = True
         camera.start_preview()
         time.sleep(0.5) # apparently camera has to "warm up"
         camera.capture(img_name)
@@ -111,7 +111,11 @@ class Camera():
         time.sleep(1)
             
         print("detecting active")
+        self.signaller.message_to_hub("Object detection active", "sendtobot")
         while True:
+            if not self.object_detection_active:
+                print("Ending detection")
+                break
             if self.object_detection_active:
                 if not self.testing:
                     for frame in camera.capture_continuous(raw_capture, format="bgr", use_video_port=True):
@@ -151,9 +155,6 @@ class Camera():
                 else:
                     time.sleep(2)
                     break
-                    
-            else:
-                break
             
         print("end of detection")
         self.signaller.message_to_hub("Object detection deactivated", "sendtobot")
