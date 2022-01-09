@@ -1,31 +1,38 @@
-from datetime import datetime
-import matplotlib.pyplot as pyplot
-import RPi.GPIO as GPIO
+#!/usr/bin/env python3
 
-RECEIVED_SIGNAL = [[], []]  #[[time of reading], [signal reading]]
-MAX_DURATION = 5
-RECEIVE_PIN = 23
+import argparse
+import signal
+import sys
+import time
+import logging
 
-if __name__ == '__main__':
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(RECEIVE_PIN, GPIO.IN)
-    cumulative_time = 0
-    beginning_time = datetime.now()
-    print '**Started recording**'
-    while cumulative_time < MAX_DURATION:
-        time_delta = datetime.now() - beginning_time
-        RECEIVED_SIGNAL[0].append(time_delta)
-        RECEIVED_SIGNAL[1].append(GPIO.input(RECEIVE_PIN))
-        cumulative_time = time_delta.seconds
-    print '**Ended recording**'
-    print len(RECEIVED_SIGNAL[0]), 'samples recorded'
-    GPIO.cleanup()
+from rpi_rf import RFDevice
 
-    print '**Processing results**'
-    for i in range(len(RECEIVED_SIGNAL[0])):
-        RECEIVED_SIGNAL[0][i] = RECEIVED_SIGNAL[0][i].seconds + RECEIVED_SIGNAL[0][i].microseconds/1000000.0
+rfdevice = None
 
-    print '**Plotting results**'
-    pyplot.plot(RECEIVED_SIGNAL[0], RECEIVED_SIGNAL[1])
-    pyplot.axis([0, MAX_DURATION, -1, 2])
-    pyplot.show()
+# pylint: disable=unused-argument
+def exithandler(signal, frame):
+    rfdevice.cleanup()
+    sys.exit(0)
+
+logging.basicConfig(level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S',
+                    format='%(asctime)-15s - [%(levelname)s] %(module)s: %(message)s', )
+
+parser = argparse.ArgumentParser(description='Receives a decimal code via a 433/315MHz GPIO device')
+parser.add_argument('-g', dest='gpio', type=int, default=27,
+                    help="GPIO pin (Default: 27)")
+args = parser.parse_args()
+
+signal.signal(signal.SIGINT, exithandler)
+rfdevice = RFDevice(args.gpio)
+rfdevice.enable_rx()
+timestamp = None
+logging.info("Listening for codes on GPIO " + str(args.gpio))
+while True:
+    if rfdevice.rx_code_timestamp != timestamp:
+        timestamp = rfdevice.rx_code_timestamp
+        logging.info(str(rfdevice.rx_code) +
+                     " [pulselength " + str(rfdevice.rx_pulselength) +
+                     ", protocol " + str(rfdevice.rx_proto) + "]")
+    time.sleep(0.01)
+rfdevice.cleanup()
