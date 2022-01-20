@@ -13,8 +13,9 @@ import bot_db, reminders, commands
 
 updater = None
 dispatcher = None
+is_testing = False
 
-updater = Updater(config("HOMEBOT_BOTKEY"), use_context=True)
+# updater = Updater(config("HOMEBOT_BOTKEY"), use_context=True)
 
 dispatcher = updater.dispatcher
 
@@ -24,6 +25,11 @@ users = []
 def start_bot():
     global updater
     global dispatcher
+    global is_testing
+    if is_testing:
+        updater = Updater(config("TESTING_BOTKEY"), use_context=True)
+    else:
+        updater = Updater(config("HOMEBOT_BOTKEY"), use_context=True)
     
     dispatcher.add_handler(CommandHandler('start', start))
     dispatcher.add_handler(CommandHandler('ip', ip_check))
@@ -175,7 +181,10 @@ bot_thread = threading.Thread(name='bot', target=start_bot)
 ip_monitor_thread = threading.Thread(name='ip_monitor', target=ip_monitor)
 reminder_thread = threading.Thread(name='reminder_checker', target=reminders.remindchecker)
 
-def activate_bot():
+def activate_bot(testing=False):
+    global is_testing
+    if testing:
+        is_testing = True
     bot_thread.start()
     ip_monitor_thread.start()
     reminder_thread.start()

@@ -42,6 +42,9 @@ class HomeHub():
         if not self.testing:
             bot.activate_bot()
             print("Bot active")
+        else:
+            bot.activate_bot(testing=True)
+            print("Bot in test mode")
         self.unit_listener_thread.start()
         self.file_listener_thread.start()
         self.remote_server_listener_thread.start()
