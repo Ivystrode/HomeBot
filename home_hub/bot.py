@@ -27,10 +27,10 @@ def start_bot():
     global updater
     global dispatcher
     global is_testing
-    if is_testing:
-        updater = Updater(config("TESTING_BOTKEY"), use_context=True)
-    else:
-        updater = Updater(config("HOMEBOT_BOTKEY"), use_context=True)
+    # if is_testing:
+    #     updater = Updater(config("TESTING_BOTKEY"), use_context=True)
+    # else:
+    #     updater = Updater(config("HOMEBOT_BOTKEY"), use_context=True)
     
     dispatcher.add_handler(CommandHandler('start', start))
     dispatcher.add_handler(CommandHandler('ip', ip_check))
@@ -198,9 +198,9 @@ ip_monitor_thread = threading.Thread(name='ip_monitor', target=ip_monitor)
 reminder_thread = threading.Thread(name='reminder_checker', target=reminders.remindchecker)
 
 def activate_bot(testing=False):
-    global is_testing
-    if testing:
-        is_testing = True
+    # global is_testing
+    # if testing:
+    #     is_testing = True
     bot_thread.start()
     ip_monitor_thread.start()
     reminder_thread.start()
