@@ -2,7 +2,7 @@ import sys, time, pytest, socket
 from decouple import config
 
 sys.path.append("/home/main/Documents/Main/Code/Projects/homebot/home_hub")
-import main_hub, bot_db
+import main_hub, bot_db, rfcon
 
 def test_add_unit_over_socket():
     """
@@ -28,3 +28,13 @@ def test_add_unit_over_socket():
     
     assert bot_db.get_unit_name("192.168.1.79") == "testname"
     assert bot_db.get_unit_address("testname") == "192.168.1.79"
+    
+def test_bot_rf_comd(plug, cmd):
+    """
+    Test to see if commands go through properly to correct rf code
+    """
+    rfcon.transmit(plug, cmd)
+    
+    assert type(rfcon.transmit(plug, cmd)) == int
+    
+# test_bot_rf_comd("plug2", "off")

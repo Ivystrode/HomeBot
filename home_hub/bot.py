@@ -1,3 +1,4 @@
+from shutil import which
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, Dispatcher, ConversationHandler
 
 from datetime import datetime
@@ -8,7 +9,7 @@ import sys
 import threading
 import time
 
-import bot_db, reminders, commands
+import bot_db, reminders, commands, rfcon
 
 
 updater = None
@@ -40,7 +41,9 @@ def start_bot():
     dispatcher.add_handler(CommandHandler('stopdetection', stop_object_detection))
     
     dispatcher.add_handler(CommandHandler('wifiscan', start_wifi_scan))    
-    dispatcher.add_handler(CommandHandler('stopwifiscan', stop_wifi_scan))    
+    dispatcher.add_handler(CommandHandler('stopwifiscan', stop_wifi_scan))  
+      
+    dispatcher.add_handler(CommandHandler('rf', plug))    
     
     dispatcher.add_handler(CommandHandler('sendpic', send_pic))
     
@@ -62,6 +65,19 @@ def ip_check(update, context):
     ip = os.popen('curl -4 icanhazip.com').read()
     update.message.reply_text(ip)
     return ip
+
+def plug(update, context):
+    try:
+        if len(context.args) < 1:
+            update.message.reply_text("You need to tell me which plug")
+        else:
+            which_plug = context.args[0]
+            on_or_off = context.args[1]
+            rfcon.transmit(which_plug, on_or_off)
+            update.message.reply_text(f"OK turned {on_or_off} {which_plug}")
+    except Exception as e:
+        update.message.reply_text(f"Something went wrong - {e}")
+        
 
 def start_object_detection(update, context):
     try:
