@@ -16,7 +16,7 @@ updater = None
 dispatcher = None
 is_testing = False
 
-# updater = Updater(config("HOMEBOT_BOTKEY"), use_context=True)
+updater = Updater(config("HOMEBOT_BOTKEY"), use_context=True)
 
 dispatcher = updater.dispatcher
 
