@@ -14,6 +14,8 @@ class RemoteHub():
         self.recv_port = int(config("REMOTE_SERVER_RECV_PORT"))
         
         self.local_server_listener_thread = threading.Thread(target=self.local_server_listener)
+        self.local_server_listener.start()
+        print("[REMOTE HUB] Activated")
         
     def local_server_listener(self):
         while True:
@@ -34,3 +36,6 @@ class RemoteHub():
                 
             except Exception as e:
                 print(f"Receive from local error: {e}")
+                
+if __name__ == '__main__':
+    remote_hub = RemoteHub()
