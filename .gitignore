@@ -8,3 +8,4 @@ keys.py
 *.env
 project_env
 *cache
+*.pytest_cache
