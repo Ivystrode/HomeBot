@@ -36,7 +36,7 @@ class HomeHub():
         self.file_listener_thread = threading.Thread(target=self.file_listener, daemon=True)
         
         # Electrical socket turn off (save electricity!)
-        self.power_saver_thread = threading.Thread(target=self.power_switch, daemon=True)
+        self.power_saver_thread = threading.Thread(target=self.power_saver, daemon=True)
         
 
         
