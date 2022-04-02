@@ -179,7 +179,7 @@ class HomeHub():
                 rfcon.transmit("plug5", "off") # send twice to make sure
                 
                 print("[HUB] Sent power saver signal 1")
-                bot.send_message("Power saver signal 1 sent")
+                # bot.send_message("Power saver signal 1 sent")
                 sent_1 = True
                 
             # checking an int value on a number that starts with 0 seems to cause issues, so do it as a string
@@ -189,7 +189,7 @@ class HomeHub():
                 rfcon.transmit("plug5", "off")
                 
                 print("[HUB] Sent power saver signal 2")
-                bot.send_message("Power saver signal 2 sent")
+                # bot.send_message("Power saver signal 2 sent")
                 sent_2 = True
                 
             if datetime.now().strftime("%H%M") == "0200" and not sent_3:
@@ -198,7 +198,7 @@ class HomeHub():
                 rfcon.transmit("plug5", "off")
                 
                 print("[HUB] Sent power saver signal 3")
-                bot.send_message("Power saver signal 3 sent")
+                # bot.send_message("Power saver signal 3 sent")
                 sent_3 = True
                 
                 
