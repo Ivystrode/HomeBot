@@ -167,6 +167,8 @@ class HomeHub():
         """
         Sends an RF signal that turns off all RF enabled power sockets to save power if they are
         left on late at night
+        For some reason this works when I do it with a lone python file or manually in the python shell
+        but not from this file. Why?
         """
         sent_1 = False
         sent_2 = False
