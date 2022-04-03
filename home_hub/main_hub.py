@@ -36,10 +36,9 @@ class HomeHub():
         self.file_listener_thread = threading.Thread(target=self.file_listener, daemon=True)
         
         # Electrical socket turn off (save electricity!)
-        self.power_saver_thread = threading.Thread(target=self.power_saver, daemon=True)
+        # self.power_saver_thread = threading.Thread(target=self.power_saver, daemon=True)
         
-
-        
+             
     def activate_hub(self):
         print("Activating hub")
         if not self.testing:
@@ -54,7 +53,7 @@ class HomeHub():
         
         self.wifi_scanner.scan_thread.start()
         
-        self.power_saver_thread.start()
+        # self.power_saver_thread.start()
         
         print("Hub active")
         
@@ -162,53 +161,53 @@ class HomeHub():
                 print(f"File listener: Receive from local network error: {e}")
                 # s.close()
                 
-    def power_saver(self):
-        """
-        Sends an RF signal that turns off all RF enabled power sockets to save power if they are
-        left on late at night
-        For some reason this works when I do it with a lone python file or manually in the python shell
-        but not from this file. Why?
-        """
-        sent_1 = False
-        sent_2 = False
-        sent_3 = False
-        while True:
-            timenow = datetime.now().strftime("%H%M%S")
-            if (int(timenow) > 235900) and (int(timenow) < 235910) and not sent_1:
-                rfcon.transmit("plug5", "off") # initially we'll make sure this is the heater...
-                time.sleep(2)
-                rfcon.transmit("plug5", "off") # send twice to make sure
+    # def power_saver(self):
+    #     """
+    #     Sends an RF signal that turns off all RF enabled power sockets to save power if they are
+    #     left on late at night
+    #     For some reason this works when I do it with a lone python file or manually in the python shell
+    #     but not from this file. Why?
+    #     """
+        # sent_1 = False
+        # sent_2 = False
+        # sent_3 = False
+        # while True:
+        #     timenow = datetime.now().strftime("%H%M%S")
+        #     if (int(timenow) > 235900) and (int(timenow) < 235910) and not sent_1:
+        #         rfcon.transmit("plug5", "off") # initially we'll make sure this is the heater...
+        #         time.sleep(2)
+        #         rfcon.transmit("plug5", "off") # send twice to make sure
                 
-                print("[HUB] Sent power saver signal 1")
-                # bot.send_message("Power saver signal 1 sent")
-                sent_1 = True
+        #         print("[HUB] Sent power saver signal 1")
+        #         # bot.send_message("Power saver signal 1 sent")
+        #         sent_1 = True
                 
-            # checking an int value on a number that starts with 0 seems to cause issues, so do it as a string
-            if datetime.now().strftime("%H%M") == "0100" and not sent_2:
-                rfcon.transmit("plug5", "off")
-                time.sleep(2)
-                rfcon.transmit("plug5", "off")
+        #     # checking an int value on a number that starts with 0 seems to cause issues, so do it as a string
+        #     if datetime.now().strftime("%H%M") == "0100" and not sent_2:
+        #         rfcon.transmit("plug5", "off")
+        #         time.sleep(2)
+        #         rfcon.transmit("plug5", "off")
                 
-                print("[HUB] Sent power saver signal 2")
-                # bot.send_message("Power saver signal 2 sent")
-                sent_2 = True
+        #         print("[HUB] Sent power saver signal 2")
+        #         # bot.send_message("Power saver signal 2 sent")
+        #         sent_2 = True
                 
-            if datetime.now().strftime("%H%M") == "0200" and not sent_3:
-                rfcon.transmit("plug5", "off")
-                time.sleep(2)
-                rfcon.transmit("plug5", "off")
+        #     if datetime.now().strftime("%H%M") == "0200" and not sent_3:
+        #         rfcon.transmit("plug5", "off")
+        #         time.sleep(2)
+        #         rfcon.transmit("plug5", "off")
                 
-                print("[HUB] Sent power saver signal 3")
-                # bot.send_message("Power saver signal 3 sent")
-                sent_3 = True
+        #         print("[HUB] Sent power saver signal 3")
+        #         # bot.send_message("Power saver signal 3 sent")
+        #         sent_3 = True
                 
                 
-            if datetime.now().strftime("%H%M") == "0600" and sent_1:
-                # reset signals
-                sent_1 = False
-                sent_2 = False
-                sent_3 = False
-                print("[HUB] Reset power saver booleans")
+        #     if datetime.now().strftime("%H%M") == "0600" and sent_1:
+        #         # reset signals
+        #         sent_1 = False
+        #         sent_2 = False
+        #         sent_3 = False
+        #         print("[HUB] Reset power saver booleans")
                 
             
                 
