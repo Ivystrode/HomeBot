@@ -107,8 +107,7 @@ class HomeHub():
                 
             except Exception as e:
                 print(f"Remote listener: Receive from remote error: {e}")
-                
-        
+                   
     def file_listener(self):
         while True:
             print("listening for files")
