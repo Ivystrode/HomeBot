@@ -13,6 +13,7 @@ def power_saver(self):
     sent_2 = False
     sent_3 = False
     while True:
+        time.sleep(30)
         timenow = datetime.now().strftime("%H%M%S")
         if (int(timenow) > 235900) and (int(timenow) < 235910) and not sent_1:
             rfcon.transmit("plug5", "off") # initially we'll make sure this is the heater...
