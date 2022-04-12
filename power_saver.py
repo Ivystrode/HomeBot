@@ -12,7 +12,7 @@ def power_saver():
     while True:
         time.sleep(20)
         timenow = datetime.now().strftime("%H%M")
-        if timenow == "1912":
+        if timenow == "2300":
             rfcon.transmit("plug5", "off") # initially we'll make sure this is the heater...
             time.sleep(2)
             rfcon.transmit("plug5", "off") # send twice to make sure
@@ -21,7 +21,7 @@ def power_saver():
             # bot.send_message("Power saver signal 1 sent")
 
         # checking an int value on a number that starts with 0 seems to cause issues, so do it as a string
-        if timenow == "1914":
+        if timenow == "0001":
             rfcon.transmit("plug5", "off")
             time.sleep(2)
             rfcon.transmit("plug5", "off")
@@ -29,7 +29,7 @@ def power_saver():
             print("[HUB] Sent power saver signal 2")
             # bot.send_message("Power saver signal 2 sent")
 
-        if timenow == "1916":
+        if timenow == "0100":
             rfcon.transmit("plug5", "off")
             time.sleep(2)
             rfcon.transmit("plug5", "off")
