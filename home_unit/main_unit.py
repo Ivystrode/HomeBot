@@ -116,8 +116,9 @@ class HomeUnit():
         self.camera.stop_live_stream()
         
     def warning_countdown(self):
-        time.sleep(1800)
-        self.temp_warnings_enabled = True
+        while True:
+            time.sleep(1800)
+            self.temp_warnings_enabled = True
 
 if __name__ == '__main__':
     unit = HomeUnit("camera")
