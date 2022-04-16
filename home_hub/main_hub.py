@@ -4,7 +4,7 @@ from datetime import datetime
 from tqdm import tqdm
 
 import ntpath, socket, subprocess, threading, time
-import bot, bot_db, wifi, rfcon
+import bot, bot_db, wifi, atlas_db
 
 class HomeHub():
     """
@@ -77,7 +77,11 @@ class HomeHub():
                 if message.lower() == "activated":
                     print("add to db")
                     bot_db.insert_unit(int(cleaned_message[2]), cleaned_message[0], unit_address[0], cleaned_message[3], message)
-                    
+                    try:
+                        atlas_db.add_camera(int(cleaned_message[2]), cleaned_message[0], unit_address[0], cleaned_message[3], message)
+                    except Exception as e:
+                        print(f"[HUB] Error adding unit to Atlas DB: {e}")
+                        bot.send_message(f"[HUB] Error adding unit to Atlas DB: {e}")
                 if cleaned_message[2] == "sendtobot":
                     bot.send_message(message, unitname=unit_name)
                 
