@@ -4,8 +4,15 @@
 *.jpg
 *.jpeg
 *.png
+*.webp
 keys.py
 *.env
 project_env
 *cache
 *.pytest_cache
+
+# face recognition models
+face_trained.yml
+features.npy
+labels.npy
+haar_face.xml
