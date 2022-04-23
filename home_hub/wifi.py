@@ -56,6 +56,8 @@ class WifiScanner():
                     bot.send_file("PINAS", filename, "Wifi scan")           
             
                 time.sleep(interval) # interval between scans
+            else:
+                break
 
             
             

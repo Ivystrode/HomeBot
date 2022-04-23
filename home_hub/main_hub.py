@@ -47,6 +47,7 @@ class HomeHub():
         else:
             bot.activate_bot(testing=True)
             print("Bot in test mode")
+            
         self.unit_listener_thread.start()
         self.file_listener_thread.start()
         self.remote_server_listener_thread.start()
@@ -58,168 +59,126 @@ class HomeHub():
         print("Hub active")
         
     def unit_listener(self):
-        while True:
-            s = socket.socket()
-            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            s.bind(('0.0.0.0',self.local_recv_port))
-            s.listen(5)
-            try:
-                unit_socket, unit_address = s.accept()
-                raw_message = unit_socket.recv(self.BUFFER_SIZE).decode()
-                cleaned_message = raw_message.split(self.SEPARATOR)
+        # while True:
+        unit_sock = socket.socket()
+        unit_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        unit_sock.bind(('0.0.0.0',self.local_recv_port))
+        unit_sock.listen()
+        
+        try:
+            sender_unit, unit_address = unit_sock.accept()
+            raw_message = sender_unit.recv(self.BUFFER_SIZE).decode()
+            cleaned_message = raw_message.split(self.SEPARATOR)
 
-                unit_name = cleaned_message[0]
-                message = cleaned_message[1]
-                print(f"Message from {unit_name}: {message}")
-                
-                s.close()
-                
-                if message.lower() == "activated":
-                    print("add to db")
-                    bot_db.insert_unit(int(cleaned_message[2]), cleaned_message[0], unit_address[0], cleaned_message[3], message)
-                    try:
-                        atlas_db.add_camera(int(cleaned_message[2]), cleaned_message[0], unit_address[0], cleaned_message[3], message)
-                    except Exception as e:
-                        print(f"[HUB] Error adding unit to Atlas DB: {e}")
-                        bot.send_message(f"[HUB] Error adding unit to Atlas DB: {e}")
-                if cleaned_message[2] == "sendtobot":
-                    bot.send_message(message, unitname=unit_name)
-                
-            except Exception as e:
-                print(f"Unit listener: Receive from local network error: {e}")
+            unit_name = cleaned_message[0]
+            message = cleaned_message[1]
+            print(f"Message from {unit_name}: {message}")
+            
+            if message.lower() == "activated":
+                print("add to db")
+                bot_db.insert_unit(int(cleaned_message[2]), cleaned_message[0], unit_address[0], cleaned_message[3], message)
+                try:
+                    atlas_db.add_camera(int(cleaned_message[2]), cleaned_message[0], unit_address[0], cleaned_message[3], message)
+                except Exception as e:
+                    print(f"[HUB] Error adding unit to Atlas DB: {e}")
+                    bot.send_message(f"[HUB] Error adding unit to Atlas DB: {e}")
+            if cleaned_message[2] == "sendtobot":
+                bot.send_message(message, unitname=unit_name)
+            
+        except Exception as e:
+            print(f"Unit listener: Receive from local network error: {e}")
+           
+        print("[HUB] Restarting unit listener") 
+        unit_sock.close()
+        self.unit_listener()
             
     def remote_server_listener(self):
-        while True:
-            s = socket.socket()
-            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            s.bind(('0.0.0.0', self.remote_recv_port))
-            s.listen(5)
-            try:
-                remote_socket, remote_address = s.accept()
-                raw_message = remote_socket.recv(self.BUFFER_SIZE).decode()
-                cleaned_message = raw_message.split(self.SEPARATOR)
+        # while True:
+        remote_server_socket = socket.socket()
+        remote_server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        remote_server_socket.bind(('0.0.0.0', self.remote_recv_port))
+        remote_server_socket.listen()
+        
+        try:
+            remote_server, remote_address = remote_server_socket.accept()
+            raw_message = remote_server.recv(self.BUFFER_SIZE).decode()
+            cleaned_message = raw_message.split(self.SEPARATOR)
 
-                remote_name = cleaned_message[0]
-                message = cleaned_message[1]
-                print(f"Message from {remote_name} at {remote_address}: {message}")
-                
-                if cleaned_message[2] == "sendtobot":
-                    bot.send_message(message)
-
-                s.close()
-                
-            except Exception as e:
-                print(f"Remote listener: Receive from remote error: {e}")
+            remote_name = cleaned_message[0]
+            message = cleaned_message[1]
+            print(f"Message from {remote_name} at {remote_address}: {message}")
+            
+            if cleaned_message[2] == "sendtobot":
+                bot.send_message(message)
+            
+        except Exception as e:
+            print(f"Remote listener: Receive from remote error: {e}")
+            
+        print("[HUB] Restarting remote server listener")
+        remote_server_socket.close()  
+        self.remote_server_listener()
                    
     def file_listener(self):
-        while True:
-            print("listening for files")
-            s = socket.socket()
-            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            s.bind(('0.0.0.0',self.file_recv_port))
-            s.listen(5)
-            print("listening")
-            try:
-                file_socket, unit_address = s.accept() # did i close this??
-                unit_name = bot_db.get_unit_name(unit_address[0])
-                print(f"[HUB] Incoming file from {unit_name}")
-                
-                try:
-                    received = file_socket.recv(self.BUFFER_SIZE).decode("utf-8")
-                except:
-                    received = file_socket.recv(self.BUFFER_SIZE).decode("iso-8859-1")
-                print(received)
-                # if unit_name is not None:
-                    
-                print(f"[HUB] Receiving file from {unit_name}")
-                # time.sleep(1)
-                print(received.split(self.SEPARATOR))
-                file, filesize, file_description, file_type = received.split(self.SEPARATOR)
-                filesize = int(filesize)
-                print(filesize)
-                filename = ntpath.basename(file)
-                print(filename)
-                print("got here")
-                progress = tqdm(range(filesize), f"[HUB] Progress {filename}", unit="B", unit_scale=True, unit_divisor=1024)
-                with open(filename, "wb") as f: 
-                    for _ in progress:
-                        bytes_read = file_socket.recv(self.BUFFER_SIZE)
-                        if not bytes_read:
-
-                            break
-                        f.write(bytes_read)
-                        progress.update(len(bytes_read))
-                print("ok now received now send to bot")
-                # send to bot to send to users
-                try:
-                    bot.send_message(f"{file_type} incoming from {unit_name}...")
-                    bot.send_file(unit_name, filename, file_description)
-                except Exception as e:
-                    bot.send_message(f"File send attempt failed: {e}")
-                
-                # s.close()
-                # print("SOCKET CLOSED")
-                
-                
-            except Exception as e:
-                print(f"File listener: Receive from local network error: {e}")
-                # s.close()
-                
-    # def power_saver(self):
-    #     """
-    #     Sends an RF signal that turns off all RF enabled power sockets to save power if they are
-    #     left on late at night
-    #     For some reason this works when I do it with a lone python file or manually in the python shell
-    #     but not from this file. Why?
-    #     """
-        # sent_1 = False
-        # sent_2 = False
-        # sent_3 = False
         # while True:
-        #     timenow = datetime.now().strftime("%H%M%S")
-        #     if (int(timenow) > 235900) and (int(timenow) < 235910) and not sent_1:
-        #         rfcon.transmit("plug5", "off") # initially we'll make sure this is the heater...
-        #         time.sleep(2)
-        #         rfcon.transmit("plug5", "off") # send twice to make sure
-                
-        #         print("[HUB] Sent power saver signal 1")
-        #         # bot.send_message("Power saver signal 1 sent")
-        #         sent_1 = True
-                
-        #     # checking an int value on a number that starts with 0 seems to cause issues, so do it as a string
-        #     if datetime.now().strftime("%H%M") == "0100" and not sent_2:
-        #         rfcon.transmit("plug5", "off")
-        #         time.sleep(2)
-        #         rfcon.transmit("plug5", "off")
-                
-        #         print("[HUB] Sent power saver signal 2")
-        #         # bot.send_message("Power saver signal 2 sent")
-        #         sent_2 = True
-                
-        #     if datetime.now().strftime("%H%M") == "0200" and not sent_3:
-        #         rfcon.transmit("plug5", "off")
-        #         time.sleep(2)
-        #         rfcon.transmit("plug5", "off")
-                
-        #         print("[HUB] Sent power saver signal 3")
-        #         # bot.send_message("Power saver signal 3 sent")
-        #         sent_3 = True
-                
-                
-        #     if datetime.now().strftime("%H%M") == "0600" and sent_1:
-        #         # reset signals
-        #         sent_1 = False
-        #         sent_2 = False
-        #         sent_3 = False
-        #         print("[HUB] Reset power saver booleans")
-                
+        print("listening for files")
+        file_socket = socket.socket()
+        file_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        file_socket.bind(('0.0.0.0',self.file_recv_port))
+        file_socket.listen()
+        print("listening")
+        
+        try:
+            sender_unit, unit_address = file_socket.accept() # did i close this??
+            unit_name = bot_db.get_unit_name(unit_address[0])
+            print(f"[HUB] Incoming file from {unit_name}")
             
+            try:
+                received = sender_unit.recv(self.BUFFER_SIZE).decode("utf-8")
+            except:
+                received = sender_unit.recv(self.BUFFER_SIZE).decode("iso-8859-1")
+            print(received)
+            # if unit_name is not None:
+                
+            print(f"[HUB] Receiving file from {unit_name}")
+            # time.sleep(1)
+            print(received.split(self.SEPARATOR))
+            file, filesize, file_description, file_type = received.split(self.SEPARATOR)
+            filesize = int(filesize)
+            print(filesize)
+            filename = ntpath.basename(file)
+            print(filename)
+            print("got here")
+            progress = tqdm(range(filesize), f"[HUB] Progress {filename}", unit="B", unit_scale=True, unit_divisor=1024)
+            with open(filename, "wb") as f: 
+                for _ in progress:
+                    bytes_read = sender_unit.recv(self.BUFFER_SIZE)
+                    if not bytes_read:
+
+                        break
+                    f.write(bytes_read)
+                    progress.update(len(bytes_read))
+            print("ok now received now send to bot")
+            # send to bot to send to users
+            try:
+                bot.send_message(f"{file_type} incoming from {unit_name}...")
+                bot.send_file(unit_name, filename, file_description)
+            except Exception as e:
+                bot.send_message(f"File send attempt failed: {e}")
+            
+            # s.close()
+            # print("SOCKET CLOSED")
+            
+            
+        except Exception as e:
+            print(f"File listener: Receive from local network error: {e}")
+            
+            
+        print("[HUB] Restarting file listener")
+        file_socket.close()
+        self.file_listener()
                 
 
-        
 
-        
-        
                 
 if __name__ == '__main__':
     hub = HomeHub(scanning=False)

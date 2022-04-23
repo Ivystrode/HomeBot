@@ -2,6 +2,11 @@
 from datetime import datetime 
 import time
 
+"""
+Moved 433mhz module to separate RPI
+This file will no longer run on PINAS
+"""
+
 def power_saver():
     """
     Sends an RF signal that turns off all RF enabled power sockets to save power if they are
