@@ -15,7 +15,7 @@ class RemoteHub():
         self.recv_port = int(config("REMOTE_SERVER_RECV_PORT"))
         
         self.local_server_listener_thread = threading.Thread(target=self.local_server_listener, daemon=True)
-        self.local_server_listener.start()
+        self.local_server_listener_thread.start()
         print("[REMOTE HUB] Activated")
         
     def local_server_listener(self):
