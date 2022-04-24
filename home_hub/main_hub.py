@@ -86,7 +86,7 @@ class HomeHub():
             if message.lower() == "activated":
                 unit_id = cleaned_message[2]
                 print("add to db")
-                bot_db.insert_unit(unit_id, cleaned_message[0], unit_address[0], cleaned_message[3], message)
+                
                 try:
                     shall_add = False
                     all_ids = []
@@ -98,9 +98,14 @@ class HomeHub():
                             
                     if shall_add:
                         atlas_db.add_camera(unit_id, cleaned_message[0], unit_address[0], cleaned_message[3], message)
+                        
                 except Exception as e:
                     print(f"[HUB] Error adding unit to Atlas DB: {e}")
                     bot.send_message(f"[HUB] Error adding unit to Atlas DB: {e}")
+                    
+                
+                bot_db.insert_unit(unit_id, cleaned_message[0], unit_address[0], cleaned_message[3], message)
+                
             if cleaned_message[2] == "sendtobot":
                 bot.send_message(message, unitname=unit_name)
             
