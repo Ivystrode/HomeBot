@@ -85,6 +85,7 @@ def start_object_detection(update, context):
             for unit in bot_db.get_all_units():
                 try:
                     commands.send_command(unit[1], "start_object_detection")
+                    time.sleep(1)
                 except Exception as e:
                     update.message.reply_text(f"Something went wrong sending to {unit[1]}: {e}")
             update.message.reply_text("Telling all units to start object detection")
