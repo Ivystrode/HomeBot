@@ -72,7 +72,8 @@ class Camera():
     # uses uv4f_raspicam now instead of motion - better framerate, larger image
     # now uses mjpeg-streamer
     def start_live_stream(self):
-        start_command = 'cd /home/pi/vid_streamer/mjpg-streamer/mjpg-streamer-experimental && ./mjpg_streamer -o "output_http.so -w ./www" -i "input_raspicam.so"'
+        # start_command = 'cd /home/pi/vid_streamer/mjpg-streamer/mjpg-streamer-experimental && ./mjpg_streamer -o "output_http.so -w ./www" -i "input_raspicam.so"'
+        start_command = './home/pi/vid_streamer/mjpg-streamer/mjpg-streamer-experimental/mjpg_streamer -o "output_http.so -w ./www" -i "input_raspicam.so"'
         # subprocess.run(['sudo','service','uv4l_raspicam','start']) 
         subprocess.run(start_command.split(" ")) 
         self.stream_active = True

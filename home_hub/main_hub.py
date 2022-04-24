@@ -150,7 +150,7 @@ class HomeHub():
             filesize = int(filesize)
             filename = ntpath.basename(file)
             progress = tqdm(range(filesize), f"[HUB] Progress {filename}", unit="B", unit_scale=True, unit_divisor=1024)
-            
+            print(received.split(self.SEPARATOR))
             with open(filename, "wb") as f: 
                 for _ in progress:
                     bytes_read = sender_unit.recv(self.BUFFER_SIZE)
