@@ -99,7 +99,7 @@ class Camera():
         
         # when set to False this stops object detection
          # edit - this is controlled from the main.py file, see if this works...
-        # self.object_detection_active = True
+        self.object_detection_active = True
         
         # this stops the pi saving too many images, we just force it to pause object detection
         detection = False
