@@ -1,4 +1,4 @@
-import os, random, socket, subprocess, threading, time
+import hashlib, os, random, socket, subprocess, threading, time
 from decouple import config
 
 from signaller import Signaller
@@ -11,6 +11,9 @@ class HomeUnit():
     
     def __init__(self, unit_type, testing=False):
         self.name = socket.gethostname()
+        self.id = self.get_id()
+        self.type = unit_type
+        self.testing = testing
         
         if not testing:
             self.hub_addr = config("LOCAL_HUB_ADDRESS")
@@ -23,9 +26,6 @@ class HomeUnit():
         self.BUFFER_SIZE = 1024
         self.SEPARATOR = "<SEPARATOR>"
             
-        self.id = random.randint(1, 1000000)
-        self.type = unit_type
-        self.testing = testing
         
         # stops it sending core temp warnings constantly
         self.temp_warning_timer = threading.Thread(target=self.warning_countdown)
@@ -46,6 +46,12 @@ class HomeUnit():
         self.hub_listener.start()     
         self.signaller.message_to_hub("Activated", str(self.id), self.type)
         print("Activation message sent")
+        
+    def get_id(self):
+        hasher = hashlib.sha1()
+        encoded_id = socket.gethostname().lower().encode()
+        hasher.update(encoded_id)
+        return str(hasher.hexdigest())
         
     def listen_for_hub(self):
         while True:
