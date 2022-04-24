@@ -237,7 +237,8 @@ class HomeHub():
         """
         
         with open(file, "rb") as f:
-            file_string = "data:image/jpeg;base64," + base64.b64encode(f.read()).decode("utf-8")
+            # file_string = "data:image/jpeg;base64," + base64.b64encode(f.read()).decode("utf-8")
+            file_string = file.read()
         
         with open("STRING.txt", "a") as f:
             f.write(file_string)
