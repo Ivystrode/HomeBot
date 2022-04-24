@@ -26,7 +26,7 @@ class RemoteHub():
         # while True:
         s = socket.socket()
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        s.bind(('0.0.0.0', self.local_recv_port))
+        s.bind(('0.0.0.0', self.recv_port))
         s.listen(5)
         try:
             local_socket, local_address = s.accept()
