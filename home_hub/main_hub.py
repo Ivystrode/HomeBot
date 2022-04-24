@@ -175,7 +175,7 @@ class HomeHub():
                 try:
                     c = os.path.getsize(filename)
                     bot.send_message(f"sent to DB - {filename} = {c}")
-                    get_response_code = self.send_file_to_db(unit=unit_name, file=filename, time=time, type=file_description)
+                    get_response_code = self.send_file_to_db(unit=unit_name, file=filename, time=time, det_type=file_description)
                     bot.send_message(f"sent to DB: {get_response_code}")
                 except Exception as e:
                     print(f"[HUB] Error sending to DB: {e}")
