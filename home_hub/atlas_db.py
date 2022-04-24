@@ -3,7 +3,7 @@ This file handles sending data from the homebot system to the Mongo Atlas DB
 """
 import json, requests, random
 
-posturl = "http://localhost:5000/post"
+posturl = "http://192.168.1.84:5000/post"
 
 def add_camera(id, name, address, type, status):
     camera_details = {
