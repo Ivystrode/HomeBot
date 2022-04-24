@@ -4,7 +4,7 @@ from datetime import datetime
 from tqdm import tqdm
 
 import ntpath, socket, subprocess, threading, time
-import bot, bot_db, wifi, atlas_db
+import bot, bot_db, wifi, atlas_db, atlas_api
 
 class HomeHub():
     """
@@ -18,8 +18,6 @@ class HomeHub():
         self.SEPARATOR = "<SEPARATOR>"
         self.testing = testing
         
-        # Wifi scanner
-        self.wifi_scanner = wifi.WifiScanner(scanning=scanning)
         
         # Remote server
         self.remote_recv_port = int(config("LOCAL_SERVER_RECV_PORT")) # listen on this
@@ -34,10 +32,15 @@ class HomeHub():
         self.unit_listener_thread = threading.Thread(target=self.unit_listener, daemon=True)
         self.remote_server_listener_thread = threading.Thread(target=self.remote_server_listener, daemon=True)
         self.file_listener_thread = threading.Thread(target=self.file_listener, daemon=True)
+
+        # Wifi scanner - runs in additional thread
+        self.wifi_scanner = wifi.WifiScanner(scanning=scanning)
         
-        # Electrical socket turn off (save electricity!)
-        # self.power_saver_thread = threading.Thread(target=self.power_saver, daemon=True)
-        
+        # Main thread - API
+        # Instantiate the API object
+        # Pass self as argument to allow api class
+        # to call hub functions
+        self.main_api = atlas_api.CentralAPI(self)
              
     def activate_hub(self):
         print("Activating hub")
@@ -48,15 +51,20 @@ class HomeHub():
             bot.activate_bot(testing=True)
             print("Bot in test mode")
             
+        # Start threads
         self.unit_listener_thread.start()
         self.file_listener_thread.start()
         self.remote_server_listener_thread.start()
-        
         self.wifi_scanner.scan_thread.start()
         
-        # self.power_saver_thread.start()
+        # Start API - runs in main thread
+        self.main_api.run_api()
         
         print("Hub active")
+        
+    def api_command(self, command):
+        print("RECEIVED COMMAND FROM API")
+        print(command)
         
     def unit_listener(self):
         # while True:

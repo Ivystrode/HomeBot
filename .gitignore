@@ -16,3 +16,6 @@ face_trained.yml
 features.npy
 labels.npy
 haar_face.xml
+
+# local folders
+code_testing
