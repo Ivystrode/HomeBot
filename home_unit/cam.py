@@ -71,12 +71,16 @@ class Camera():
     # ==========Video stream==========
     # uses uv4f_raspicam now instead of motion - better framerate, larger image
     def start_live_stream(self):
-        subprocess.run(['sudo','service','uv4l_raspicam','start']) 
+        start_command = 'cd /home/pi/vid_streamer/mjpg-streamer/mjpg-streamer-experimental && ./mjpg_streamer -o "output_http.so -w ./www" -i "input_raspicam.so"'
+        # subprocess.run(['sudo','service','uv4l_raspicam','start']) 
+        subprocess.run(start_command.split(" ")) 
         self.stream_active = True
         self.signaller.message_to_hub("Starting live video")
     
     def stop_live_stream(self):
-        subprocess.run(['sudo','service','uv4f_raspicam','stop'])
+        stop_command = "sudo killall mjpg-streamer"
+        # subprocess.run(['sudo','service','uv4f_raspicam','stop'])
+        subprocess.run(stop_command.split(" "))
         self.stream_active = False
         self.signaller.message_to_hub("Stopping live video")
         
