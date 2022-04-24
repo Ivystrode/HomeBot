@@ -18,16 +18,16 @@ class RemoteHub():
         # self.local_server_listener_thread = threading.Thread(target=self.local_server_listener, daemon=True)
         # self.local_server_listener_thread.start()
         
+        print("[REMOTE HUB] Activated")
         self.local_server_listener()
         
-        print("[REMOTE HUB] Activated")
         
     def local_server_listener(self):
         # while True:
         s = socket.socket()
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind(('0.0.0.0', self.recv_port))
-        s.listen(5)
+        s.listen()
         try:
             local_socket, local_address = s.accept()
             raw_message = local_socket.recv(self.BUFFER_SIZE).decode()
