@@ -175,8 +175,8 @@ class HomeHub():
                 try:
                     c = os.path.getsize(filename)
                     bot.send_message(f"sent to DB - {filename} = {c}")
-                    self.send_file_to_db(unit=unit_name, file=filename, time=time, type=file_description)
-                    bot.send_message("sent to DB")
+                    get_response_code = self.send_file_to_db(unit=unit_name, file=filename, time=time, type=file_description)
+                    bot.send_message(f"sent to DB: {get_response_code}")
                 except Exception as e:
                     print(f"[HUB] Error sending to DB: {e}")
                     bot.send_message(f"Failed to send file to DB: {e}")
@@ -239,9 +239,10 @@ class HomeHub():
         with open(file, "rb") as f:
             file_string = "data:image/jpeg;base64," + base64.b64encode(f.read()).decode("utf-8")
         
-        atlas_db.add_detection(detection_unit=unit, detection_type=type, time=time, image=file_string)
+        response_code = atlas_db.add_detection(detection_unit=unit, detection_type=type, time=time, image=file_string)
         
         bot.send_message("File sent to Atlas")
+        return response_code
 
 
                 

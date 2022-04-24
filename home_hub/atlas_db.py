@@ -26,3 +26,4 @@ def add_detection(detection_unit, detection_type, time, image):
     }
     p = requests.post(f"{posturl}/detections", json=detection_details)
     print(p)
+    return p
