@@ -32,14 +32,14 @@ class Signaller():
         print("Message sent to hub")
         s.close()
         
-    def send_file(self, file, description, time, file_type="photo"):
+    def send_file(self, file, description, taken_time, file_type="photo"):
         s = socket.socket()
         print(f"Connecting to hub...")
         s.connect((self.hub_addr, self.file_port))
         filesize = os.path.getsize(file)
 
         print(f"Sending file: {file}")
-        filedetails = f"{file}{self.SEPARATOR}{filesize}{self.SEPARATOR}{description}{self.SEPARATOR}{time}{self.SEPARATOR}{file_type}"
+        filedetails = f"{file}{self.SEPARATOR}{filesize}{self.SEPARATOR}{description}{self.SEPARATOR}{taken_time}{self.SEPARATOR}{file_type}"
         fdencoded = filedetails.encode()
         print(filedetails)
         print(fdencoded)
