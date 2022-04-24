@@ -169,7 +169,7 @@ class HomeHub():
                     self.send_file_to_remote(filename, filesize, file_description, file_type)
                     print("[HUB] File sent over socket to remote, sending to database now...")
                     bot.send_message("Sent to remote")
-                except:
+                except Exception as e:
                     bot.send_message(f"Failed to send file to remote: {e}")
 
                 try:
