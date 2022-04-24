@@ -170,15 +170,15 @@ class HomeHub():
             # if it is a detection send it to the database
             print("AAAAAAAAAAAAAAAAAAAAAAAAAAA")
             print(file_type)
-            if file_type == "detection":
-                self.send_file_to_remote(file, filesize, file_description, file_type)
-                print("[HUB] File sent over socket to remote, sending to database now...")
-                
-                try:
-                    self.send_file_to_db(unit=unit_name, file=file, time=time, type=file_description)
-                except Exception as e:
-                    print(f"[HUB] Error sending to DB: {e}")
-                    bot.send_message(f"Failed to send file to DB: {e}")
+            # if file_type == "detection":
+            self.send_file_to_remote(file, filesize, file_description, file_type)
+            print("[HUB] File sent over socket to remote, sending to database now...")
+            
+            try:
+                self.send_file_to_db(unit=unit_name, file=file, time=time, type=file_description)
+            except Exception as e:
+                print(f"[HUB] Error sending to DB: {e}")
+                bot.send_message(f"Failed to send file to DB: {e}")
             
             
         except Exception as e:
