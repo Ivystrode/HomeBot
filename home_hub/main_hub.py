@@ -239,7 +239,7 @@ class HomeHub():
         with open(file, "rb") as f:
             file_string = "data:image/jpeg;base64," + base64.b64encode(f.read()).decode("utf-8")
         
-        with open("STRING.txt", a) as f:
+        with open("STRING.txt", "a") as f:
             f.write(file_string)
         
         response_code = atlas_db.add_detection(detection_unit=unit, detection_type=det_type, time=time, image=file_string)
