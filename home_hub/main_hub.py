@@ -85,9 +85,9 @@ class HomeHub():
             
             if message.lower() == "activated":
                 print("add to db")
-                bot_db.insert_unit(int(cleaned_message[2]), cleaned_message[0], unit_address[0], cleaned_message[3], message)
+                bot_db.insert_unit(cleaned_message[2], cleaned_message[0], unit_address[0], cleaned_message[3], message)
                 try:
-                    atlas_db.add_camera(int(cleaned_message[2]), cleaned_message[0], unit_address[0], cleaned_message[3], message)
+                    atlas_db.add_camera(cleaned_message[2], cleaned_message[0], unit_address[0], cleaned_message[3], message)
                 except Exception as e:
                     print(f"[HUB] Error adding unit to Atlas DB: {e}")
                     bot.send_message(f"[HUB] Error adding unit to Atlas DB: {e}")
