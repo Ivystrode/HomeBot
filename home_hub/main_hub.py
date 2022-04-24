@@ -1,4 +1,4 @@
-import os
+import base64, os
 from decouple import config
 from datetime import datetime
 from tqdm import tqdm
@@ -20,6 +20,7 @@ class HomeHub():
         
         
         # Remote server
+        self.remote_address = config("REMOTE_SERVER_IP")
         self.remote_recv_port = int(config("LOCAL_SERVER_RECV_PORT")) # listen on this
         self.remote_send_port = int(config("REMOTE_SERVER_RECV_PORT")) # send on this
         
@@ -128,12 +129,10 @@ class HomeHub():
                    
     def file_listener(self):
         # while True:
-        print("listening for files")
         file_socket = socket.socket()
         file_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         file_socket.bind(('0.0.0.0',self.file_recv_port))
         file_socket.listen()
-        print("listening")
         
         try:
             sender_unit, unit_address = file_socket.accept() # did i close this??
@@ -144,19 +143,14 @@ class HomeHub():
                 received = sender_unit.recv(self.BUFFER_SIZE).decode("utf-8")
             except:
                 received = sender_unit.recv(self.BUFFER_SIZE).decode("iso-8859-1")
-            print(received)
+            
             # if unit_name is not None:
                 
-            print(f"[HUB] Receiving file from {unit_name}")
-            # time.sleep(1)
-            print(received.split(self.SEPARATOR))
-            file, filesize, file_description, file_type = received.split(self.SEPARATOR)
+            file, filesize, file_description, time, file_type = received.split(self.SEPARATOR)
             filesize = int(filesize)
-            print(filesize)
             filename = ntpath.basename(file)
-            print(filename)
-            print("got here")
             progress = tqdm(range(filesize), f"[HUB] Progress {filename}", unit="B", unit_scale=True, unit_divisor=1024)
+            
             with open(filename, "wb") as f: 
                 for _ in progress:
                     bytes_read = sender_unit.recv(self.BUFFER_SIZE)
@@ -165,7 +159,7 @@ class HomeHub():
                         break
                     f.write(bytes_read)
                     progress.update(len(bytes_read))
-            print("ok now received now send to bot")
+            
             # send to bot to send to users
             try:
                 bot.send_message(f"{file_type} incoming from {unit_name}...")
@@ -173,8 +167,16 @@ class HomeHub():
             except Exception as e:
                 bot.send_message(f"File send attempt failed: {e}")
             
-            # s.close()
-            # print("SOCKET CLOSED")
+            # if it is a detection send it to the database
+            if file_type == "detection":
+                self.send_file_to_remote(file, filesize, file_description, file_type)
+                print("[HUB] File sent over socket to remote, sending to database now...")
+                
+                try:
+                    self.send_file_to_db(unit=unit_name, file=file, time=time, type=file_description)
+                except Exception as e:
+                    print(f"[HUB] Error sending to DB: {e}")
+                    bot.send_message(f"Failed to send file to DB: {e}")
             
             
         except Exception as e:
@@ -184,7 +186,43 @@ class HomeHub():
         print("[HUB] Restarting file listener")
         file_socket.close()
         self.file_listener()
+        
+    def send_file_to_remote(self, file, filesize, file_description, file_type):
+        remote_socket = socket.socket()
+        remote_socket.connect((self.remote_address, self.remote_send_port))
+
+        filedetails = f"file_incoming{self.SEPARATOR}{file}{self.SEPARATOR}{filesize}{self.SEPARATOR}{file_description}{self.SEPARATOR}{file_type}"
+        fdencoded = filedetails.encode()
+        remote_socket.sendall(fdencoded)
                 
+        with open(file,"rb") as f:
+            for _ in range(filesize):
+                try:
+                    bytes_read = f.read(self.BUFFER_SIZE)
+                    
+                    if not bytes_read:
+                        break
+                    
+                    remote_socket.sendall(bytes_read)
+                except Exception as e:
+                    print(f"File send to remote error: {e}")
+                    break
+                
+        remote_socket.close()
+        
+    def send_file_to_db(self, unit, file, time, type):
+        """
+        Send the file to the Atlas DB instance
+        Specifically a detection occurrence
+        Must be converted to a base64 string to be stored
+        """
+        
+        with open(file, "rb") as f:
+            file_string = "data:image/jpeg;base64," + base64.b64encode(file.read()).decode("utf-8")
+        
+        atlas_db.add_detection(detection_unit=unit, detection_type=type, time=time, image=file_string)
+        
+        bot.send_message("File sent to Atlas")
 
 
                 

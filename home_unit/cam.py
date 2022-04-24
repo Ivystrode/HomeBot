@@ -154,7 +154,7 @@ class Camera():
                                             self.log(f"{datetime.now().strftime('%H%M')} - {labels[ClassInd-1]}_detected")
                                             detection = True
                                             print(f"{labels[ClassInd-1]} detected, dimensions: {boxes}, confidence: {round(float(conf*100), 1)}%")
-                                            self.signaller.send_file(imgfile, f"{self.name}: detected person at {datetime.now().strftime('%H%M%S')}", "photo")
+                                            self.signaller.send_file(imgfile, "person", f"{datetime.now().strftime('%H%M%S')}", file_type="detection")
                                         
                         if detection:
                             # this is basically a timer that stops the pi saving millions of images
