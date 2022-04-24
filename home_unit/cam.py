@@ -70,6 +70,7 @@ class Camera():
         
     # ==========Video stream==========
     # uses uv4f_raspicam now instead of motion - better framerate, larger image
+    # now uses mjpeg-streamer
     def start_live_stream(self):
         start_command = 'cd /home/pi/vid_streamer/mjpg-streamer/mjpg-streamer-experimental && ./mjpg_streamer -o "output_http.so -w ./www" -i "input_raspicam.so"'
         # subprocess.run(['sudo','service','uv4l_raspicam','start']) 
@@ -87,12 +88,14 @@ class Camera():
     # ==========Object recognition==========
     def stop_im_recog(self):
         self.detection_stop.set()
+        self.start_live_stream()
     
     def im_recog(self, dontneedthisarg, detection_stop, counts_before_detect_again=60):
         """
         Runs image detection model on the pi, saves pictures of people
         """
         time.sleep(0.5)
+        self.stop_live_stream()
         
         # when set to False this stops object detection
          # edit - this is controlled from the main.py file, see if this works...
