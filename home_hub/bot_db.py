@@ -5,6 +5,7 @@ def connect():
     conn = sqlite3.connect("bot_database.db")
     cur = conn.cursor()
     cur.execute(f"CREATE TABLE IF NOT EXISTS ip (time text, ip_address text)")
+    cur.execute(f"CREATE TABLE IF NOT EXISTS devices (MAC text, time_first_seen text, trusted integer)")
     cur.execute(f"CREATE TABLE IF NOT EXISTS authorised_users (id INTEGER PRIMARY KEY, Name text, Type text)")
     cur.execute(f"CREATE TABLE IF NOT EXISTS reminders (user_id integer, username text, detail text, time text)")
     cur.execute(f"CREATE TABLE IF NOT EXISTS units (id TEXT PRIMARY KEY, name text, address text, type text, status text)")
@@ -150,5 +151,36 @@ def update_unit(address, status):
     cur.execute(f"UPDATE units SET status=? WHERE address=?", (status, address))
     conn.commit()
     conn.close()
+
+# MAC ADDRESS DETECTOR...
+def add_device(mac, time, trusted):
+    conn=sqlite3.connect("bot_database.db")
+    cur=conn.cursor()
+    cur.execute(f"INSERT INTO devices VALUES (?, ?, ?)", (mac, time, trusted))
+    conn.commit()
+    conn.close()
+
+def check_device_trusted(mac):
+    conn=sqlite3.connect("bot_database.db")
+    cur=conn.cursor()
+    cur.execute("SELECT * FROM devices WHERE mac=?", (mac,))
+    result=cur.fetchall()
+    conn.close()
+    print(result)
+    return result[0][2] # trusted status (0 or 1..)
+
+def get_all_devices():    
+    conn=sqlite3.connect("bot_database.db")
+    cur=conn.cursor()
+    
+    try:
+        cur.execute(f"SELECT * FROM devices")
+        devices=cur.fetchall()
+        conn.close()
+        return devices
+    except:
+        print("not found...")
+        return "not found"
+
     
 connect()
