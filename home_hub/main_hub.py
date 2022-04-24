@@ -229,7 +229,7 @@ class HomeHub():
                 
         remote_socket.close()
         
-    def send_file_to_db(self, unit, file, time, type):
+    def send_file_to_db(self, unit, file, time, det_type):
         """
         Send the file to the Atlas DB instance
         Specifically a detection occurrence
@@ -242,7 +242,7 @@ class HomeHub():
         with open("STRING.txt", a) as f:
             f.write(file_string)
         
-        response_code = atlas_db.add_detection(detection_unit=unit, detection_type=type, time=time, image=file_string)
+        response_code = atlas_db.add_detection(detection_unit=unit, detection_type=det_type, time=time, image=file_string)
         
         bot.send_message("File sent to Atlas")
         return response_code
