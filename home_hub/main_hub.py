@@ -168,6 +168,8 @@ class HomeHub():
                 bot.send_message(f"File send attempt failed: {e}")
             
             # if it is a detection send it to the database
+            print("AAAAAAAAAAAAAAAAAAAAAAAAAAA")
+            print(file_type)
             if file_type == "detection":
                 self.send_file_to_remote(file, filesize, file_description, file_type)
                 print("[HUB] File sent over socket to remote, sending to database now...")
