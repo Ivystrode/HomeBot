@@ -79,7 +79,7 @@ class Camera():
         self.signaller.message_to_hub("Starting live video")
     
     def stop_live_stream(self):
-        stop_command = "sudo killall mjpg-streamer"
+        stop_command = "sudo killall mjpg_streamer"
         # subprocess.run(['sudo','service','uv4f_raspicam','stop'])
         subprocess.run(stop_command.split(" "))
         self.stream_active = False
