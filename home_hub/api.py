@@ -105,23 +105,23 @@ class CentralAPI():
 
             ins_data = request.get_json()
             
-            if not collection.find({"id": ins_data['id']}):
+            # if not collection.find({"id": ins_data['id']}):
+            try:
                 try:
-                    try:
-                        data = collection.insert_many(ins_data)
-                        print("INSERT MANY")
-                    except:
-                        data = collection.insert_one(ins_data)
-                        print("INSERT ONE")
-                        
-                    print("inserting:")
-                    print(data)
-                    return str(data)
-                
-                except Exception as e:
-                    return json.dumps(e)
-            else:
-                return "Already in database"
+                    data = collection.insert_many(ins_data)
+                    print("INSERT MANY")
+                except:
+                    data = collection.insert_one(ins_data)
+                    print("INSERT ONE")
+                    
+                print("inserting:")
+                print(data)
+                return str(data)
+            
+            except Exception as e:
+                return json.dumps(e)
+            # else:
+                # return "Already in database"
             
         # @app.route("/post/detections", methods=['POST'])
         # def post_detection():
