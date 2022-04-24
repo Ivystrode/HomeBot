@@ -4,7 +4,7 @@ from datetime import datetime
 from tqdm import tqdm
 
 import ntpath, socket, subprocess, threading, time
-import bot, bot_db, wifi, atlas_db, atlas_api
+import bot, bot_db, wifi, atlas_db, api
 
 class HomeHub():
     """
@@ -40,7 +40,7 @@ class HomeHub():
         # Instantiate the API object
         # Pass self as argument to allow api class
         # to call hub functions
-        self.main_api = atlas_api.CentralAPI(self)
+        self.main_api = api.CentralAPI(self)
              
     def activate_hub(self):
         print("Activating hub")
