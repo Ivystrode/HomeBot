@@ -33,10 +33,6 @@ class Unit():
         self.temp_warning_timer = threading.Thread(target=self.warning_countdown)
         self.temp_warnings_enabled = True
         
-        self.camera = Camera(signaller=Signaller(self.hub_addr, 
-                                                 self.send_port, 
-                                                 self.file_send_port),
-                             testing=self.testing)
         
         self.signaller = Signaller(self.hub_addr, 
                                    self.send_port, 
@@ -114,6 +110,12 @@ class CameraUnit(Unit):
     
     def __init__(self, unit_type, testing=False):
         super().__init__(unit_type, testing)
+        
+        
+        self.camera = Camera(signaller=Signaller(self.hub_addr, 
+                                                 self.send_port, 
+                                                 self.file_send_port),
+                             testing=self.testing)
 
     def start_object_detection(self):
         try:
