@@ -3,10 +3,12 @@ from decouple import config
 
 from signaller import Signaller
 from cam import Camera
+import rfcon
 
-class HomeUnit():
+class Unit():
     """
-    The main instance of the camera unit
+    The parent class of units
+    Units (atm) will either be camera or rfcontroller
     """
     
     def __init__(self, unit_type, testing=False):
@@ -101,7 +103,18 @@ class HomeUnit():
                 
             except Exception as e:
                 print(f"Receive from local network error: {e}")
+                
+    def warning_countdown(self):
+        while True:
+            time.sleep(1800)
+            self.temp_warnings_enabled = True
         
+        
+class CameraUnit(Unit):
+    
+    def __init__(self, unit_type, testing=False):
+        super().__init__(unit_type, testing)
+
     def start_object_detection(self):
         try:
             self.camera.object_detection_active = True
@@ -121,10 +134,18 @@ class HomeUnit():
     def stop_live_stream(self):
         self.camera.stop_live_stream()
         
-    def warning_countdown(self):
-        while True:
-            time.sleep(1800)
-            self.temp_warnings_enabled = True
+class RfController(Unit):
+    
+    def __init__(self, unit_type, testing=False):
+        super().__init__(unit_type, testing)
+        
+    def transmit(self, plug, state):
+        """
+        Plug will be 'plug1-5'
+        State will be 'on/off'
+        """
+        rfcon.transmit(plug, state)
+        
 
 if __name__ == '__main__':
-    unit = HomeUnit("camera")
+    unit = Unit("camera")
