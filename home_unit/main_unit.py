@@ -2,8 +2,6 @@ import hashlib, os, random, socket, subprocess, threading, time
 from decouple import config
 
 from signaller import Signaller
-from cam import Camera
-import rfcon
 
 class Unit():
     """
@@ -44,6 +42,9 @@ class Unit():
         self.hub_listener.start()     
         self.signaller.message_to_hub("Activated", str(self.id), self.type)
         print("Activation message sent")
+        
+    def __str__(self) -> str:
+        return self.type
         
     def get_id(self):
         hasher = hashlib.sha1()
@@ -105,49 +106,3 @@ class Unit():
             time.sleep(1800)
             self.temp_warnings_enabled = True
         
-        
-class CameraUnit(Unit):
-    
-    def __init__(self, unit_type, testing=False):
-        super().__init__(unit_type, testing)
-        
-        
-        self.camera = Camera(signaller=Signaller(self.hub_addr, 
-                                                 self.send_port, 
-                                                 self.file_send_port),
-                             testing=self.testing)
-
-    def start_object_detection(self):
-        try:
-            self.camera.object_detection_active = True
-            self.camera.object_detection.start()
-        except Exception as e:
-            self.signaller.message_to_hub(f"Unable to start object detection: {e}", "sendtobot")
-            self.camera.object_detection_active = False
-            
-        
-    def stop_object_detection(self):
-        self.camera.object_detection_active = False
-        self.camera.stop_im_recog()
-        
-    def start_live_stream(self):
-        self.camera.start_live_stream()
-        
-    def stop_live_stream(self):
-        self.camera.stop_live_stream()
-        
-class RfController(Unit):
-    
-    def __init__(self, unit_type, testing=False):
-        super().__init__(unit_type, testing)
-        
-    def transmit(self, plug, state):
-        """
-        Plug will be 'plug1-5'
-        State will be 'on/off'
-        """
-        rfcon.transmit(plug, state)
-        
-
-if __name__ == '__main__':
-    unit = Unit("camera")
