@@ -8,7 +8,7 @@ class CameraUnit(Unit):
         super().__init__(unit_type, testing)
         
         
-        self.camera = Camera(signaller=Signaller(self.hub_addr, 
+        self.camera = Camera(signaller=Signaller(self.hub_addr, # could also just pass self so camera can use the unit's original signaller
                                                  self.send_port, 
                                                  self.file_send_port),
                              testing=self.testing)
