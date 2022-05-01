@@ -75,21 +75,21 @@ def plug(update, context):
         else:
             which_plug = context.args[1]
             on_or_off = context.args[0]
+        update.message.reply_text(f"Homebot: Telling RF controller to turn {on_or_off} plug {which_plug}")
             
         for unit in bot_db.get_all_units():
             if unit[3] == "RF Controller":
                 commands.send_command(unit[1], on_or_off, which_plug)
                 
-                update.message.reply_text(f"Homebot: OK turned {on_or_off} {which_plug}")
     except Exception as e:
         update.message.reply_text(f"Homebot: Something went wrong - {e}")
         
 def activate_all(update, context):
     try:
+        update.message.reply_text("Homebot: Telling RF Controller to switch on all units...")
         for unit in bot_db.get_all_units():
             if unit[3] == "RF Controller":
                 commands.send_command(unit[1], "activate_all")
-        update.message.reply_text("Homebot: Sending activation transmissions")
     except Exception as e:
         update.message.reply_text(f"Homebot: Something went wrong - {e}")
         
@@ -105,13 +105,13 @@ def deactivate_all(update, context):
 def start_object_detection(update, context):
     try:
         if len(context.args) == 0:
+            update.message.reply_text("Homebot: Telling all units to start object detection")
             for unit in bot_db.get_all_units():
                 try:
                     commands.send_command(unit[1], "start_object_detection")
                     time.sleep(1)
                 except Exception as e:
                     update.message.reply_text(f"Homebot: Something went wrong sending to {unit[1]}: {e}")
-            update.message.reply_text("Homebot: Telling all units to start object detection")
     except Exception as e:
         update.message.reply_text("Something went wrong")
         update.message.reply_text(f"{e}")
@@ -119,9 +119,9 @@ def start_object_detection(update, context):
 def stop_object_detection(update, context):
     try:
         if len(context.args) == 0:
+            update.message.reply_text("Homebot: Telling all units to stop object detection")
             for unit in bot_db.get_all_units():
                 commands.send_command(unit[1], "stop_object_detection")
-            update.message.reply_text("Homebot: Telling all units to stop object detection")
     except Exception as e:
         update.message.reply_text("Homebot: Something went wrong")
         update.message.reply_text(f"{e}")
@@ -135,13 +135,13 @@ def stop_wifi_scan(update, context):
 def send_pic(update, context):
     try:
         if len(context.args) == 0:
+            update.message.reply_text("Homebot: Getting picture from all units")
             for unit in bot_db.get_all_units():
                 commands.send_command(unit[1], "send_photo")
-            update.message.reply_text("Homebot: Getting picture from all units")
         else:
             for unit in context.args:
-                commands.send_command(unit, "send_photo")
                 update.message.reply_text(f"Homebot: Getting picture from {unit}...")
+                commands.send_command(unit, "send_photo")
     except Exception as e:
         update.message.reply_text("Homebot: Something went wrong")
         update.message.reply_text(f"{e}")
@@ -149,13 +149,13 @@ def send_pic(update, context):
 def reboot(update, context):
     try:
         if len(context.args) == 0:
+            update.message.reply_text("Homebot: Rebooting all units")
             for unit in bot_db.get_all_units():
                 commands.send_command(unit[1], "reboot")
-            update.message.reply_text("Homebot: Rebooting all units")
         else:
             for unit in context.args:
-                commands.send_command(unit, "reboot")
                 update.message.reply_text(f"Homebot: Rebooting {unit}...")
+                commands.send_command(unit, "reboot")
     except Exception as e:
         update.message.reply_text("Homebot: Something went wrong")
         update.message.reply_text(f"{e}")
