@@ -10,7 +10,7 @@ class MotionDetectorUnit(Unit):
     def __init__(self, unit_type, testing=False):
         super().__init__(unit_type, testing)
         
-        self.motion_detection = threading.Thread(target=self.detect_motion)
+        self.motion_detection = threading.Thread(target=self.detect_motion, daemon=True)
         
         
         self.camera = Camera(signaller=Signaller(self.hub_addr, # could also just pass self so camera can use the unit's original signaller
@@ -18,7 +18,10 @@ class MotionDetectorUnit(Unit):
                                                  self.file_send_port),
                              testing=self.testing)
         
+        self.motion_detection.start()
+        
     def detect_motion(self):
+        self.signaller.message_to_hub("Motion detection active", "sendtobot")
         pir = MotionSensor(17)
         pir.wait_for_motion()
         print('motion detected')
