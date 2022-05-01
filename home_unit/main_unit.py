@@ -45,9 +45,11 @@ class Unit():
     def command_router(self, command, *args):
         cmd = getattr(self, command)
         try:
-            cmd()
             if args:
-                cmd(args[0])
+                print(args)
+                cmd(str(args[0]))
+            else:
+                cmd()
         except Exception as e:
             self.signaller.message_to_hub(f"No command named {command}", "sendtobot")
         
