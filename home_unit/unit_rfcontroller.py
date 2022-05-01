@@ -52,7 +52,7 @@ class RfController(Unit):
         self.signaller.message_to_hub(f"Transmitted off signal to plug {str(plug)}", "sendtobot")
     
 if __name__ == '__main__':
-    with open("rfcodes.json", "r") as f:
+    with open("/home/pi/Code/HomeBot/home_unit/rfcodes.json", "r") as f:
         rfcodes1 = json.loads(f.read())
         
         rfcontroller = RfController("RF Controller", rfcodes=rfcodes1)
