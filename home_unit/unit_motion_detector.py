@@ -50,6 +50,13 @@ class MotionDetectorUnit(Unit):
             time.sleep(5)
 
     @camerafunction
+    def send_photo(self):
+        if not self.camera.object_detection_active:
+            self.camera.capt_img()
+        else:
+            self.signaller.message_to_hub("Unable to take photo - object detection is using camera resource", "sendtobot")
+            
+    @camerafunction
     def start_object_detection(self):
         try:
             self.camera.object_detection_active = True
@@ -72,4 +79,4 @@ class MotionDetectorUnit(Unit):
         self.camera.stop_live_stream()
         
 if __name__ == '__main__':
-    motion_detector = MotionDetectorUnit("Motion detector")
+    motion_detector = MotionDetectorUnit("Motion detector", has_camera=False)

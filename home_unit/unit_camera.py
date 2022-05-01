@@ -13,6 +13,12 @@ class CameraUnit(Unit):
                                                  self.file_send_port),
                              testing=self.testing)
 
+    def send_photo(self):
+        if not self.camera.object_detection_active:
+            self.camera.capt_img()
+        else:
+            self.signaller.message_to_hub("Unable to take photo - object detection is using camera resource", "sendtobot")
+            
     def start_object_detection(self):
         try:
             self.camera.object_detection_active = True

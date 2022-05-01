@@ -33,7 +33,7 @@ class RfController(Unit):
         self.signaller.message_to_hub("Activation signal transmitted to all units", "sendtobot")
         
     def deactivate_all(self):
-        print("Activating all devices")
+        print("Deactivating all devices")
         
         for i in range(1, 6):
             self.transmit(f"plug{i}", "off")
