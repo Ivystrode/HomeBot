@@ -25,9 +25,9 @@ class RfController(Unit):
         print("Activating all devices")
         
         for i in range(1, 6):
-            self.transmit(f"plug{i}", "on")
+            self.transmit(f"plug{str(i)}", "on")
             time.sleep(0.5)
-            self.transmit(f"plug{i}", "on")
+            self.transmit(f"plug{str(i)}", "on")
             time.sleep(0.5)
             
         self.signaller.message_to_hub("Activation signal transmitted to all units", "sendtobot")
@@ -36,20 +36,20 @@ class RfController(Unit):
         print("Deactivating all devices")
         
         for i in range(1, 6):
-            self.transmit(f"plug{i}", "off")
+            self.transmit(f"plug{str(i)}", "off")
             time.sleep(0.5)
-            self.transmit(f"plug{i}", "off")
+            self.transmit(f"plug{str(i)}", "off")
             time.sleep(0.5)
             
         self.signaller.message_to_hub("Deactivation signal transmitted to all units", "sendtobot")
         
     def on(self, plug):
-        self.transmit(f"plug{plug}", "on")
-        self.signaller.message_to_hub(f"Transmitted on signal to plug {plug}", "sendtobot")
+        self.transmit(f"plug{str(plug)}", "on")
+        self.signaller.message_to_hub(f"Transmitted on signal to plug {str(plug)}", "sendtobot")
         
     def off(self, plug):
-        self.transmit(f"plug{plug}", "off")
-        self.signaller.message_to_hub(f"Transmitted off signal to plug {plug}", "sendtobot")
+        self.transmit(f"plug{str(plug)}", "off")
+        self.signaller.message_to_hub(f"Transmitted off signal to plug {str(plug)}", "sendtobot")
     
 if __name__ == '__main__':
     with open("rfcodes.json", "r") as f:

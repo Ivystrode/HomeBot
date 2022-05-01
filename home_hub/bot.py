@@ -80,7 +80,7 @@ def plug(update, context):
             if unit[3] == "RF Controller":
                 commands.send_command(unit[1], on_or_off, which_plug)
                 
-            update.message.reply_text(f"OK turned {on_or_off} {which_plug}")
+                update.message.reply_text(f"OK turned {on_or_off} {which_plug}")
     except Exception as e:
         update.message.reply_text(f"Something went wrong - {e}")
         
@@ -89,6 +89,7 @@ def activate_all(update, context):
         for unit in bot_db.get_all_units():
             if unit[3] == "RF Controller":
                 commands.send_command(unit[1], "activate_all")
+        update.message.reply_text("Sent activation transmissions")
     except Exception as e:
         update.message.reply_text(f"Something went wrong - {e}")
         
