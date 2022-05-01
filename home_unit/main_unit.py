@@ -1,10 +1,9 @@
 import hashlib, os, random, socket, subprocess, threading, time
 from decouple import config
-from abc import ABC, abstractclassmethod, abstractmethod
 
 from signaller import Signaller
 
-class Unit(ABC):
+class Unit():
     """
     The parent class of units (an abstract base class)
     Units (atm) will either be camera, rfcontroller or motion detector
@@ -35,14 +34,14 @@ class Unit(ABC):
         self.temp_warning_timer = threading.Thread(target=self.warning_countdown)
         
         self.hub_listener.start()    
-        self.temp_warnings_timer.start() 
+        self.temp_warning_timer.start() 
         self.signaller.message_to_hub("Activated", str(self.id), self.type)
         print("Activation message sent")
         
     def __str__(self) -> str:
         return f"{self.name}: {self.type}"
     
-    @abstractmethod
+    # @abstractmethod
     def command_router(self, command):
         cmd = getattr(self, command)
         try:
