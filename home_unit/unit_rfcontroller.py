@@ -1,6 +1,6 @@
 from main_unit import Unit
 from rpi_rf import RFDevice
-import json
+import json, time
 
 class RfController(Unit):
          
@@ -20,6 +20,17 @@ class RfController(Unit):
         rfdevice.tx_code(code, self.PROTOCOL, self.PULSE_LENGTH)
         rfdevice.cleanup()
         return code
+    
+    def activate_all(self):
+        print("Activating all devices")
+        
+        for i in range(1, 6):
+            self.transmit(f"plug{i}", "on")
+            time.sleep(0.5)
+            self.transmit(f"plug{i}", "on")
+            time.sleep(0.5)
+            
+        self.signaller.message_to_hub("Activation message sent to all units", "sendtobot")
     
 if __name__ == '__main__':
     with open("rfcodes.json", "r") as f:

@@ -4,7 +4,7 @@ from datetime import datetime
 from tqdm import tqdm
 
 import ntpath, socket, subprocess, threading, time
-import bot, bot_db, wifi, atlas_db, api
+import bot, bot_db, wifi, atlas_db, api, commands
 
 class HomeHub():
     """
@@ -105,6 +105,11 @@ class HomeHub():
                     
                 
                 bot_db.insert_unit(unit_id, cleaned_message[0], unit_address[0], cleaned_message[3], message)
+                
+            if message.lower() == "Motion detected":
+                for unit in bot_db.get_all_units():
+                    if unit[3] == "RF Controller":
+                        commands.send_command(unit[1], "activate_all")
                 
             if cleaned_message[2] == "sendtobot":
                 bot.send_message(message, unitname=unit_name)

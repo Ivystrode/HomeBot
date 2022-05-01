@@ -44,6 +44,7 @@ def start_bot():
     dispatcher.add_handler(CommandHandler('stopwifiscan', stop_wifi_scan))  
       
     dispatcher.add_handler(CommandHandler('rf', plug))    
+    dispatcher.add_handler(CommandHandler('activate', activate_all))    
     
     dispatcher.add_handler(CommandHandler('sendpic', send_pic))
     
@@ -75,6 +76,14 @@ def plug(update, context):
             on_or_off = context.args[1]
             rfcon.transmit(which_plug, on_or_off)
             update.message.reply_text(f"OK turned {on_or_off} {which_plug}")
+    except Exception as e:
+        update.message.reply_text(f"Something went wrong - {e}")
+        
+def activate_all(update, context):
+    try:
+        for unit in bot_db.get_all_units():
+            if unit[3] == "RF Controller":
+                commands.send_command(unit[1], "activate_all")
     except Exception as e:
         update.message.reply_text(f"Something went wrong - {e}")
         

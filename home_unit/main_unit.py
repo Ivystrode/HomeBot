@@ -1,12 +1,13 @@
 import hashlib, os, random, socket, subprocess, threading, time
 from decouple import config
+from abc import ABC, abstractclassmethod, abstractmethod
 
 from signaller import Signaller
 
-class Unit():
+class Unit(ABC):
     """
-    The parent class of units
-    Units (atm) will either be camera or rfcontroller
+    The parent class of units (an abstract base class)
+    Units (atm) will either be camera, rfcontroller or motion detector
     """
     
     def __init__(self, unit_type, testing=False):
@@ -25,30 +26,33 @@ class Unit():
         self.file_send_port = int(config("LOCAL_HUB_FILE_RECV_PORT"))
         self.BUFFER_SIZE = 1024
         self.SEPARATOR = "<SEPARATOR>"
-            
-        
-        # stops it sending core temp warnings constantly
-        self.temp_warning_timer = threading.Thread(target=self.warning_countdown)
-        self.temp_warnings_enabled = True
-        
         
         self.signaller = Signaller(self.hub_addr, 
                                    self.send_port, 
                                    self.file_send_port)
         
         self.hub_listener = threading.Thread(target=self.listen_for_hub)
+        self.temp_warning_timer = threading.Thread(target=self.warning_countdown)
         
-        
-        self.hub_listener.start()     
+        self.hub_listener.start()    
+        self.temp_warnings_timer.start() 
         self.signaller.message_to_hub("Activated", str(self.id), self.type)
         print("Activation message sent")
         
     def __str__(self) -> str:
-        return self.type
+        return f"{self.name}: {self.type}"
+    
+    @abstractmethod
+    def command_router(self, command):
+        cmd = getattr(self, command)
+        try:
+            cmd()
+        except Exception as e:
+            self.signaller.message_to_hub(f"No command named {command}", "sendtobot")
         
     def get_id(self):
         hasher = hashlib.sha1()
-        encoded_id = socket.gethostname().lower().encode()
+        encoded_id = self.name.lower().encode()
         hasher.update(encoded_id)
         return str(hasher.hexdigest())
         
@@ -67,36 +71,13 @@ class Unit():
                 message = cleaned_message[1]
                 print(f"Message from {hub_name} at {hub_address}: {message}")
 
-                if message == "start_object_detection":
-                    self.start_object_detection()
-                if message == "stop_object_detection":
-                    self.stop_object_detection()
-                if message == "send_photo":
-                    if not self.camera.object_detection_active:
-                        print("Taking picture")
-                        self.camera.capt_img()
-                    else:
-                        print("Object detection active, can't take picture")
-                        self.signaller.message_to_hub("Unable to take photo - object detection is using camera resource", "sendtobot")
                 if message == "reboot":
                     print("REBOOTING")
                     subprocess.run(['sudo','reboot','now'])
-
-                # USING THE STRING AS THE FUNCTION NAME TO CALL:
-                # command = getattr(self, message)
-                # try:
-                #     command()
-                # except Exception as e:
-                #     print("MAIN: Message not recognised as command (error: {e}).")
+                else:
+                    self.command_router(message)
                     
                 s.close()
-                
-                # check temperature
-                core_temp = os.popen("vcgencmd measure_temp").read()[5:9]
-                core_temp = float(core_temp)
-                if core_temp > 55.0 and self.temp_warnings_enabled:
-                    self.signaller.message_to_hub(f"Core temperature warning - {core_temp}", "sendtobot")
-                    self.temp_warnings_enabled = False
                 
             except Exception as e:
                 print(f"Receive from local network error: {e}")
@@ -104,5 +85,8 @@ class Unit():
     def warning_countdown(self):
         while True:
             time.sleep(1800)
-            self.temp_warnings_enabled = True
+            core_temp = os.popen("vcgencmd measure_temp").read()[5:9]
+            core_temp = float(core_temp)
+            if core_temp > 55.0:
+                self.signaller.message_to_hub(f"Core temperature warning - {core_temp}", "sendtobot")
         
