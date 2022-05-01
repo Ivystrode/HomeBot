@@ -42,10 +42,12 @@ class Unit():
         return f"{self.name}: {self.type}"
     
     # @abstractmethod
-    def command_router(self, command):
+    def command_router(self, command, *args):
         cmd = getattr(self, command)
         try:
             cmd()
+            if args:
+                cmd(args[0])
         except Exception as e:
             self.signaller.message_to_hub(f"No command named {command}", "sendtobot")
         
@@ -74,7 +76,10 @@ class Unit():
                     print("REBOOTING")
                     subprocess.run(['sudo','reboot','now'])
                 else:
-                    self.command_router(message)
+                    if not cleaned_message[2]:
+                        self.command_router(message)
+                    else:
+                        self.command_router(message, cleaned_message[2])
                     
                 s.close()
                 

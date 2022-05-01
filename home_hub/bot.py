@@ -9,7 +9,7 @@ import sys
 import threading
 import time
 
-import bot_db, reminders, commands, rfcon
+import bot_db, reminders, commands
 
 
 updater = None
@@ -75,7 +75,11 @@ def plug(update, context):
         else:
             which_plug = context.args[0]
             on_or_off = context.args[1]
-            rfcon.transmit(which_plug, on_or_off)
+            
+        for unit in bot_db.get_all_units():
+            if unit[3] == "RF Controller":
+                commands.send_command(unit[1], on_or_off, which_plug)
+                
             update.message.reply_text(f"OK turned {on_or_off} {which_plug}")
     except Exception as e:
         update.message.reply_text(f"Something went wrong - {e}")
