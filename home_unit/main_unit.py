@@ -70,14 +70,17 @@ class Unit():
 
                 hub_name = cleaned_message[0]
                 message = cleaned_message[1]
-                detail = cleaned_message[2]
+                try:
+                    detail = cleaned_message[2]
+                except:
+                    detail = None
                 print(f"Message from {hub_name} at {hub_address}: {message}")
 
                 if message == "reboot":
                     print("REBOOTING")
                     subprocess.run(['sudo','reboot','now'])
                 else:
-                    if detail is None:
+                    if detail is not None:
                         self.command_router(message)
                     else:
                         self.command_router(message, detail)

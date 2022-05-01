@@ -73,8 +73,8 @@ def plug(update, context):
         if len(context.args) < 1:
             update.message.reply_text("You need to tell me which plug")
         else:
-            which_plug = context.args[0]
-            on_or_off = context.args[1]
+            which_plug = context.args[1]
+            on_or_off = context.args[0]
             
         for unit in bot_db.get_all_units():
             if unit[3] == "RF Controller":
