@@ -42,9 +42,9 @@ class MotionDetectorUnit(Unit):
     def detect_motion(self):
         while self.motion_sensing:
             self.pir_sensor.wait_for_motion()
-            self.signaller.message_to_hub("Motion detection active", "sendtobot")
-            print('motion detected')
             self.signaller.message_to_hub("Motion detected", "sendtobot")
+            print('motion detected')
+            
             self.pir_sensor.wait_for_no_motion()
             print('motion ceased')
             time.sleep(5)

@@ -45,6 +45,7 @@ def start_bot():
       
     dispatcher.add_handler(CommandHandler('rf', plug))    
     dispatcher.add_handler(CommandHandler('activate', activate_all))    
+    dispatcher.add_handler(CommandHandler('deactivate', deactivate_all))    
     
     dispatcher.add_handler(CommandHandler('sendpic', send_pic))
     
@@ -84,6 +85,14 @@ def activate_all(update, context):
         for unit in bot_db.get_all_units():
             if unit[3] == "RF Controller":
                 commands.send_command(unit[1], "activate_all")
+    except Exception as e:
+        update.message.reply_text(f"Something went wrong - {e}")
+        
+def deactivate_all(update, context):
+    try:
+        for unit in bot_db.get_all_units():
+            if unit[3] == "RF Controller":
+                commands.send_command(unit[1], "deactivate_all")
     except Exception as e:
         update.message.reply_text(f"Something went wrong - {e}")
         
