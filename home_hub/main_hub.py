@@ -263,7 +263,6 @@ class HomeHub():
         
         response_code = atlas_db.add_detection(detection_unit=unit, detection_type=det_type, time=time, image=file_string)
         
-        bot.send_message("File sent to Atlas")
         return response_code
 
 
