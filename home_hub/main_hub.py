@@ -105,6 +105,7 @@ class HomeHub():
                     
                 
                 bot_db.insert_unit(unit_id, cleaned_message[0], unit_address[0], cleaned_message[3], message)
+                bot.send_message(f"{unit_name} activated", unitname="Hub")
                 
             if message.lower() == "Motion detected":
                 for unit in bot_db.get_all_units():
