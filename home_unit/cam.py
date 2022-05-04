@@ -54,6 +54,8 @@ class Camera():
         """
         Basic picture taking with pi camera
         """
+        self.stop_live_stream()
+        time.sleep(1)
         print(f"Capture image")
         img_name = datetime.now().strftime("%Y%m%d-%H%M%S") + "-" + str(self.name) + ".jpg"
         camera = PiCamera()
@@ -67,6 +69,7 @@ class Camera():
         camera.close()
         print(f"Image saved as {img_name}")
         self.signaller.send_file(img_name, f"Camera shot from {self.name}", "photo")
+        self.start_live_stream()
         
     # ==========Video stream==========
     # uses uv4f_raspicam now instead of motion - better framerate, larger image
