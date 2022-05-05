@@ -98,8 +98,10 @@ class Camera():
         """
         Runs image detection model on the pi, saves pictures of people
         """
+        self.signaller.message_to_hub(f"Stopping livestream", "sendtobot")
         time.sleep(0.5)
         self.stop_live_stream()
+        self.signaller.message_to_hub(f"Stopped livestream", "sendtobot")
         
         # when set to False this stops object detection
          # edit - this is controlled from the main.py file, see if this works...
@@ -114,6 +116,8 @@ class Camera():
         labels = []
         with open("Labels", "r") as f:
             labels = [line.strip() for line in f.readlines()]
+            
+        self.signaller.message_to_hub(f"Model found", "sendtobot")
 
         model = cv2.dnn_DetectionModel(frozen_model, config_file)
         model.setInputSize(320,320)
@@ -128,6 +132,7 @@ class Camera():
         camera.framerate = 32
         raw_capture = PiRGBArray(camera, size=(1024, 768))
         time.sleep(1)
+        self.signaller.message_to_hub(f"Camera ready", "sendtobot")
             
         print("detecting active")
         self.signaller.message_to_hub("Object detection active", "sendtobot")
@@ -137,6 +142,7 @@ class Camera():
             if not self.object_detection_active:
                 self.detection_stop.set()
                 print("Ending detection")
+                self.signaller.message_to_hub(f"Ending detection", "sendtobot")
                 # detection_stop.wait()
                 break
             if self.object_detection_active:
