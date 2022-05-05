@@ -110,14 +110,16 @@ class Camera():
         # this stops the pi saving too many images, we just force it to pause object detection
         detection = False
         
+        try:
+            config_file = "ssd_mobilenet_v3_large_coco_2020_01_14.pbtxt"
+            frozen_model="frozen_inference_graph.pb"
+            labels = []
+            with open("Labels", "r") as f:
+                labels = [line.strip() for line in f.readlines()]
             
-        config_file = "ssd_mobilenet_v3_large_coco_2020_01_14.pbtxt"
-        frozen_model="frozen_inference_graph.pb"
-        labels = []
-        with open("Labels", "r") as f:
-            labels = [line.strip() for line in f.readlines()]
-            
-        self.signaller.message_to_hub(f"Model found", "sendtobot")
+            self.signaller.message_to_hub(f"Model found", "sendtobot")
+        except Exception as e:
+            self.signaller.message_to_hub(f"Problem: {e}", "sendtobot")
 
         model = cv2.dnn_DetectionModel(frozen_model, config_file)
         model.setInputSize(320,320)
