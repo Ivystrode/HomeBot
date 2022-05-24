@@ -61,6 +61,9 @@ class Camera():
         Basic picture taking with pi camera
         """
         logger.info("Capturing image...")
+        self.stop_live_stream()
+        time.sleep(1)
+        print(f"Capture image")
         img_name = datetime.now().strftime("%Y%m%d-%H%M%S") + "-" + str(self.name) + ".jpg"
         camera = PiCamera()
         camera.resolution = (1024, 768)
@@ -74,6 +77,7 @@ class Camera():
         print(f"Image saved as {img_name}")
         self.signaller.send_file(img_name, f"Camera shot from {self.name}", "photo")
         logger.info("Image captured and sent to hub")
+        self.start_live_stream()
         
     # ==========Video stream==========
     # uses uv4f_raspicam now instead of motion - better framerate, larger image
@@ -111,6 +115,7 @@ class Camera():
         logger.info("Starting object detection...")
         time.sleep(0.5)
         self.stop_live_stream()
+        self.signaller.message_to_hub(f"Stopped livestream", "sendtobot")
         
         # when set to False this stops object detection
          # edit - this is controlled from the main.py file, see if this works...
@@ -120,14 +125,21 @@ class Camera():
         detection = False
         
         logger.info("Getting model...")
-        config_file = "ssd_mobilenet_v3_large_coco_2020_01_14.pbtxt"
-        frozen_model="frozen_inference_graph.pb"
-        labels = []
-        logger.info("Reading labels...")
-        with open("Labels", "r") as f:
-            labels = [line.strip() for line in f.readlines()]
+        try:
+            config_file = "ssd_mobilenet_v3_large_coco_2020_01_14.pbtxt"
+            frozen_model="frozen_inference_graph.pb"
+            labels = []
+            with open("Labels", "r") as f:
+                labels = [line.strip() for line in f.readlines()]
             
-        logger.info("Initialising model...")
+            logger.info("Got model")
+        except Exception as e:
+            logger.error(f"Error getting model: {e}")
+            self.signaller.message_to_hub(f"Problem: {e}", "sendtobot")
+            
+        logger.info("Got model. Initialising model...")
+
+
         model = cv2.dnn_DetectionModel(frozen_model, config_file)
         model.setInputSize(320,320)
         model.setInputScale(1.0/127.5)
@@ -142,6 +154,7 @@ class Camera():
         camera.framerate = 32
         raw_capture = PiRGBArray(camera, size=(1024, 768))
         time.sleep(1)
+        self.signaller.message_to_hub(f"Camera ready", "sendtobot")
             
         logger.info("Object detection active")
         self.signaller.message_to_hub("Object detection active", "sendtobot")
@@ -151,6 +164,8 @@ class Camera():
             if not self.object_detection_active:
                 self.detection_stop.set()
                 logger.info("Detection flag raised - object_detection_active set to false")
+                print("Ending detection")
+                self.signaller.message_to_hub(f"Ending detection", "sendtobot")
                 # detection_stop.wait()
                 break
             if self.object_detection_active:
