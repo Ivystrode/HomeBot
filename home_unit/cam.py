@@ -104,6 +104,7 @@ class Camera():
     # ==========Object recognition==========
     def stop_im_recog(self):
         logger.info("Stopping object detection")
+        self.object_detection_active = False
         self.detection_stop.set()
         self.start_live_stream()
         logger.info("Stopped object detection")
