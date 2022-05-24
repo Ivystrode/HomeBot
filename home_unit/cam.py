@@ -1,4 +1,4 @@
-import cv2, os, socket, subprocess, time, threading
+import cv2, logging, os, socket, subprocess, time, threading
 import numpy as np
 from datetime import datetime
 
@@ -10,6 +10,12 @@ except:
     pass
 from datetime import datetime
 from tqdm import tqdm
+
+logging.basicConfig(filename="cam_file.log",
+                    format='%(asctime)s %(message)s',
+                    filemode='w')
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 class Camera():
     """
@@ -45,7 +51,7 @@ class Camera():
 
     # ==========Log all actions==========
     def log(self, action):
-        with open("log.txt", "a") as f:
+        with open("detection_log.txt", "a") as f:
             f.write(action)
             
 
@@ -54,7 +60,7 @@ class Camera():
         """
         Basic picture taking with pi camera
         """
-        print(f"Capture image")
+        logger.info("Capturing image...")
         img_name = datetime.now().strftime("%Y%m%d-%H%M%S") + "-" + str(self.name) + ".jpg"
         camera = PiCamera()
         camera.resolution = (1024, 768)
@@ -67,34 +73,42 @@ class Camera():
         camera.close()
         print(f"Image saved as {img_name}")
         self.signaller.send_file(img_name, f"Camera shot from {self.name}", "photo")
+        logger.info("Image captured and sent to hub")
         
     # ==========Video stream==========
     # uses uv4f_raspicam now instead of motion - better framerate, larger image
     # now uses mjpeg-streamer
     def start_live_stream(self):
+        logger.info("Start live stream")
         # start_command = 'cd /home/pi/vid_streamer/mjpg-streamer/mjpg-streamer-experimental && ./mjpg_streamer -o "output_http.so -w ./www" -i "input_raspicam.so"'
         start_command = './home/pi/vid_streamer/mjpg-streamer/mjpg-streamer-experimental/mjpg_streamer -o "output_http.so -w ./www" -i "input_raspicam.so"'
         # subprocess.run(['sudo','service','uv4l_raspicam','start']) 
         subprocess.run(start_command.split(" ")) 
         self.stream_active = True
         self.signaller.message_to_hub("Starting live video")
+        logger.info("Start live stream")
     
     def stop_live_stream(self):
+        logger.info("Stopping live stream")
         stop_command = "sudo killall mjpg_streamer"
         # subprocess.run(['sudo','service','uv4f_raspicam','stop'])
         subprocess.run(stop_command.split(" "))
         self.stream_active = False
         self.signaller.message_to_hub("Stopping live video")
+        logger.info("Stopped live stream")
         
     # ==========Object recognition==========
     def stop_im_recog(self):
+        logger.info("Stopping object detection")
         self.detection_stop.set()
         self.start_live_stream()
+        logger.info("Stopped object detection")
     
     def im_recog(self, dontneedthisarg, detection_stop, counts_before_detect_again=60):
         """
         Runs image detection model on the pi, saves pictures of people
         """
+        logger.info("Starting object detection...")
         time.sleep(0.5)
         self.stop_live_stream()
         
@@ -105,19 +119,22 @@ class Camera():
         # this stops the pi saving too many images, we just force it to pause object detection
         detection = False
         
-            
+        logger.info("Getting model...")
         config_file = "ssd_mobilenet_v3_large_coco_2020_01_14.pbtxt"
         frozen_model="frozen_inference_graph.pb"
         labels = []
+        logger.info("Reading labels...")
         with open("Labels", "r") as f:
             labels = [line.strip() for line in f.readlines()]
-
+            
+        logger.info("Initialising model...")
         model = cv2.dnn_DetectionModel(frozen_model, config_file)
         model.setInputSize(320,320)
         model.setInputScale(1.0/127.5)
         model.setInputMean((127.5,127.5,127.5))
         model.setInputSwapRB(True)
         
+        logger.info("Set up picamera")
         camera = PiCamera()
         camera.resolution = (1024, 768)
         # camera.vflip = True
@@ -126,14 +143,14 @@ class Camera():
         raw_capture = PiRGBArray(camera, size=(1024, 768))
         time.sleep(1)
             
-        print("detecting active")
+        logger.info("Object detection active")
         self.signaller.message_to_hub("Object detection active", "sendtobot")
         # while True:
         while not detection_stop.is_set():
             
             if not self.object_detection_active:
                 self.detection_stop.set()
-                print("Ending detection")
+                logger.info("Detection flag raised - object_detection_active set to false")
                 # detection_stop.wait()
                 break
             if self.object_detection_active:
@@ -159,9 +176,10 @@ class Camera():
                                         if not detection:
                                             imgfile = f'{labels[ClassInd-1].capitalize()}_detection_{datetime.now().strftime("%H%M%S")}.jpg'
                                             cv2.imwrite(f'{imgfile}', image)
-                                            self.log(f"{datetime.now().strftime('%H%M')} - {labels[ClassInd-1]}_detected")
+                                            self.log(f"{datetime.now().strftime('%H%M')} - {labels[ClassInd-1]}_detected\n")
                                             detection = True
                                             print(f"{labels[ClassInd-1]} detected, dimensions: {boxes}, confidence: {round(float(conf*100), 1)}%")
+                                            logger.info(f"{labels[ClassInd-1]} detected, dimensions: {boxes}, confidence: {round(float(conf*100), 1)}%")
                                             self.signaller.send_file(imgfile, "person", f"{datetime.now().strftime('%H%M%S')}", file_type="detection")
                                         
                         if detection:

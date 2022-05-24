@@ -1,3 +1,4 @@
+import logging
 from main_unit import Unit
 from cam import Camera
 from signaller import Signaller
@@ -20,10 +21,15 @@ class CameraUnit(Unit):
             self.signaller.message_to_hub("Unable to take photo - object detection is using camera resource", "sendtobot")
             
     def start_object_detection(self):
+        logger.info("Object detection told to start")
         try:
+            logger.info("Setting obj det active to true")
             self.camera.object_detection_active = True
+            logger.info("Start obj det thread")
             self.camera.object_detection.start()
+            logger.info("Object detection thread started")
         except Exception as e:
+            logger.error(f"Object detection failed to start - {e}")
             self.signaller.message_to_hub(f"Unable to start object detection: {e}", "sendtobot")
             self.camera.object_detection_active = False
             
@@ -40,3 +46,8 @@ class CameraUnit(Unit):
         
 if __name__ == '__main__':
     camera = CameraUnit("camera")
+    logging.basicConfig(filename="cam_unit.log",
+                    format='%(asctime)s %(message)s',
+                    filemode='w')
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)

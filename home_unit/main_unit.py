@@ -1,7 +1,14 @@
-import hashlib, os, random, socket, subprocess, threading, time
+import hashlib, logging, os, random, socket, subprocess, threading, time
 from decouple import config
 
 from signaller import Signaller
+
+logging.basicConfig(filename="main_unit.log",
+                    format='%(asctime)s %(message)s',
+                    filemode='w')
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 class Unit():
     """
@@ -46,13 +53,17 @@ class Unit():
         cmd = getattr(self, command)
         try:
             if args:
-                print("args!")
-                print(args)
+                logger.info(f"Command {command} received - with args: {args}")
                 cmd(str(args[0]))
+                logger.info(f"Command {command} completed")
             else:
+                logger.info(f"Command {command} received")
                 cmd()
+                logger.info(f"Command {command} completed")
         except Exception as e:
+            logger.error(f"Error with {command}: {e}")
             self.signaller.message_to_hub(f"No command named {command}", "sendtobot")
+            logger.info(f"Error message sent to hub")
         
     def get_id(self):
         hasher = hashlib.sha1()
