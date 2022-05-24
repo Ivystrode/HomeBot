@@ -139,12 +139,16 @@ class Camera():
             
         logger.info("Got model. Initialising model...")
 
-
-        model = cv2.dnn_DetectionModel(frozen_model, config_file)
-        model.setInputSize(320,320)
-        model.setInputScale(1.0/127.5)
-        model.setInputMean((127.5,127.5,127.5))
-        model.setInputSwapRB(True)
+        try:
+            logger.info("Setting up DNN")
+            model = cv2.dnn_DetectionModel(frozen_model, config_file)
+            model.setInputSize(320,320)
+            model.setInputScale(1.0/127.5)
+            model.setInputMean((127.5,127.5,127.5))
+            model.setInputSwapRB(True)
+        except Exception as e:
+            logger.info(f"DNN setup failed -- {e}")
+            logger.error(f"DNN setup failed: {e}")
         
         logger.info("Set up picamera")
         camera = PiCamera()
@@ -154,7 +158,6 @@ class Camera():
         camera.framerate = 32
         raw_capture = PiRGBArray(camera, size=(1024, 768))
         time.sleep(1)
-        self.signaller.message_to_hub(f"Camera ready", "sendtobot")
             
         logger.info("Object detection active")
         self.signaller.message_to_hub("Object detection active", "sendtobot")
