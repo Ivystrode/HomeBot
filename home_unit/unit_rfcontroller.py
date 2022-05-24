@@ -1,6 +1,6 @@
 from main_unit import Unit
 from rpi_rf import RFDevice
-import json, time
+import json, time, logging
 
 class RfController(Unit):
          
@@ -13,16 +13,18 @@ class RfController(Unit):
         self.PULSE_LENGTH = 200
 
     def transmit(self, plug, on_or_off):
+        logger.info(f"Transmitting {on_or_off} to {plug}")
         code = self.rfcode_mapping[plug][on_or_off]
-        print(f"Transmitting {code}")
+        logger.info(f"Transmit code: {code}")
         rfdevice = RFDevice(17)
         rfdevice.enable_tx()
         rfdevice.tx_code(code, self.PROTOCOL, self.PULSE_LENGTH)
         rfdevice.cleanup()
+        logger.info("Transmit complete")
         return code
     
     def activate_all(self):
-        print("Activating all devices")
+        logger.info("Activating all devices")
         
         for i in range(1, 6):
             self.transmit(f"plug{str(i)}", "on")
@@ -33,7 +35,7 @@ class RfController(Unit):
         self.signaller.message_to_hub("Activation signal transmitted to all units", "sendtobot")
         
     def deactivate_all(self):
-        print("Deactivating all devices")
+        logger.info("Deactivating all devices")
         
         for i in range(1, 6):
             self.transmit(f"plug{str(i)}", "off")
@@ -55,7 +57,11 @@ if __name__ == '__main__':
     with open("/home/pi/Code/HomeBot/home_unit/rfcodes.json", "r") as f:
         rfcodes1 = json.loads(f.read())
         
-        rfcontroller = RfController("RF Controller", rfcodes=rfcodes1)
-        
-        print(rfcontroller)
-
+    rfcontroller = RfController("RF Controller", rfcodes=rfcodes1)
+    
+    print(rfcontroller)
+    logging.basicConfig(filename="cam_unit.log",
+                    format='%(asctime)s %(message)s',
+                    filemode='w')
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)

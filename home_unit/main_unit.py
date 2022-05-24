@@ -62,7 +62,7 @@ class Unit():
                 logger.info(f"Command {command} completed")
         except Exception as e:
             logger.error(f"Error with {command}: {e}")
-            self.signaller.message_to_hub(f"No command named {command}", "sendtobot")
+            self.signaller.message_to_hub(f"Error with {command}: {e}", "sendtobot")
             logger.info(f"Error message sent to hub")
         
     def get_id(self):
