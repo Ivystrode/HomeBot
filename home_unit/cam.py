@@ -85,7 +85,7 @@ class Camera():
     def start_live_stream(self):
         logger.info("Start live stream")
         # start_command = 'cd /home/pi/vid_streamer/mjpg-streamer/mjpg-streamer-experimental && ./mjpg_streamer -o "output_http.so -w ./www" -i "input_raspicam.so"'
-        start_command = './home/pi/vid_streamer/mjpg-streamer/mjpg-streamer-experimental/mjpg_streamer -o "output_http.so -w ./www" -i "input_raspicam.so"'
+        start_command = '/home/pi/vid_streamer/mjpg-streamer/mjpg-streamer-experimental/mjpg_streamer -o "output_http.so -w ./www" -i "input_raspicam.so"'
         # subprocess.run(['sudo','service','uv4l_raspicam','start']) 
         subprocess.run(start_command.split(" ")) 
         self.stream_active = True
