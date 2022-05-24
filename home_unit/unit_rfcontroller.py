@@ -54,14 +54,14 @@ class RfController(Unit):
         self.signaller.message_to_hub(f"Transmitted off signal to plug {str(plug)}", "sendtobot")
     
 if __name__ == '__main__':
-    with open("/home/pi/Code/HomeBot/home_unit/rfcodes.json", "r") as f:
+    with open("/home/pi/HomeBot/home_unit/rfcodes.json", "r") as f:
         rfcodes1 = json.loads(f.read())
         
-    rfcontroller = RfController("RF Controller", rfcodes=rfcodes1)
-    
-    print(rfcontroller)
-    logging.basicConfig(filename="cam_unit.log",
-                    format='%(asctime)s %(message)s',
-                    filemode='w')
-    logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
+        rfcontroller = RfController("RF Controller", rfcodes=rfcodes1)
+        
+        print(rfcontroller)
+        logging.basicConfig(filename="cam_unit.log",
+                        format='%(asctime)s %(message)s',
+                        filemode='w')
+        logger = logging.getLogger()
+        logger.setLevel(logging.DEBUG)
